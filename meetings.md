@@ -1,14 +1,18 @@
 # Meetings notes
 
 ## Meeting 1.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE:** 13.2.2020
+* **ASSISTANTS:** Marta Cortes Orduna
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+* Deliverable review
+* The DL 2 is this week!
 
 ### Action points
-*List here the actions points discussed with assistants*
+* Sell the idea!
+* Update Concepts and Relations to match what has been described
+* Functions don't have to be described in Concepts and Relations
+* The TA will check if we have to describe two additional API uses
 
 
 ### Comments from staff
