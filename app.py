@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import binascii, hashlib, os
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
@@ -43,7 +44,7 @@ def add_user():
             return "Missing query parameter: email", 400
     else:
         pass
-    return "asd"
+    return "Add user"
 
 # Edit user
 @app.route("/user/edit/")
@@ -76,7 +77,7 @@ def edit_user():
             abort(400)
     else:
         pass
-    return 0
+    return "Edit user"
     
 # Delete user
 @app.route("/user/delete/")
@@ -92,7 +93,7 @@ def delete_user():
                 abort(404)  
         except (KeyError, ValueError, IntegrityError):
             abort(400)
-    return 0
+    return "Delete user"
 
 # Add event
 @app.route("/event/add/")
@@ -115,7 +116,7 @@ def add_event():
         db.session.commit()
     else:
         pass
-    return 0
+    return "Add event"
 
 # Edit event
 @app.route("/event/edit/")
@@ -145,7 +146,7 @@ def edit_event():
             abort(400)
     else:
         pass
-    return 0
+    return "Edit event"
     
 # Delete event
 @app.route("/event/delete/")
@@ -161,7 +162,7 @@ def delete_event():
                 abort(404)  
         except (KeyError, ValueError, IntegrityError):
             abort(400)
-    return 0
+    return "Delete event"
 
 # Add org
 @app.route("/org/add/")
@@ -174,7 +175,7 @@ def add_org():
         )
         db.session.add(org)
         db.session.commit()
-    return 0
+    return "Add organization"
 
 # Edit org
 @app.route("/org/edit/")
@@ -194,7 +195,7 @@ def edit_org():
                 abort(404)  
         except (KeyError, ValueError, IntegrityError):
             abort(400)
-    return 0
+    return "Edit organization"
     
 # Delete org
 @app.route("/org/delete/")
@@ -210,19 +211,16 @@ def delete_org():
                 abort(404)
         except (KeyError, ValueError, IntegrityError):
             abort(400)
-    return 0
+    return "Delete organization"
 
 # User model
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(128), nullable=False)
     pwdhash = db.Column(db.String(128), nullable=False)
     location = db.Column(db.String(128))
-    notifications = db.Column(db.Boolean, nullable=False)
-    #following = db.Column(db.String(255), db.ForeignKey("event.id"))
-    
-    follow = db.relationship("Event", back_populates="user")
+    notifications = db.Column(db.Integer, nullable=False)
         
 # Event model
 class Event(db.Model):
@@ -234,7 +232,6 @@ class Event(db.Model):
     organization = db.Column(db.Integer, db.ForeignKey("organization.id"))
     
     org = db.relationship("Organization", back_populates="event")
-    user = db.relationship("User", back_populates="follow")
     
 # Organization model
 class Organization(db.Model):
@@ -245,12 +242,12 @@ class Organization(db.Model):
     
 # Users associated to organizations
 associations = db.Table("associations",
-    db.Column("user_id", db.Integer, db.ForeignKey("user", primary_key=True)),
-    db.Column("organization_id", db.Integer, db.ForeignKey("organization", primary_key=True))
+    db.Column("user", db.Integer, db.ForeignKey("user.id"), primary_key=True),
+    db.Column("organization", db.Integer, db.ForeignKey("organization.id"), primary_key=True)
 )
 
 # Users following events
 following = db.Table("following",
-    db.Column("user", db.Integer, db.ForeignKey("user.id", primary_key=True)),
-    db.Column("event", db.Integer, db.ForeignKey("event.id", primary_key=True))
+    db.Column("user", db.Integer, db.ForeignKey("user.id"), primary_key=True),
+    db.Column("event", db.Integer, db.ForeignKey("event.id"), primary_key=True)
 )
