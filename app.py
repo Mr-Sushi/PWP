@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 import binascii, hashlib, os
 
 app = Flask(__name__)
@@ -8,10 +9,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
+# Generate password hash
+# https://www.vitoshacademy.com/hashing-passwords-in-python/
 def hash_password(password):
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
-    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), 
-                                salt, 100000)
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt, 100000)
     pwdhash = binascii.hexlify(pwdhash)
     return (salt + pwdhash).decode('ascii')
 
@@ -23,14 +25,14 @@ def add_user():
             email = request.form["email"]
             user = User.query.filter_by(email=email).first()
             if user:
-                return 0;
+                return "This email is already in use", 409
             else:
                 name = request.form["name"]
                 email = request.form["email"]
                 password = request.form["password"]
                 pwdhash = hash_password(password)
                 location = request.form["location"]
-                notifications = request.form["notifications"]
+                notifications = int(request.form["notifications"])
                 user = User(
                     name=name,
                     email=email,
@@ -40,97 +42,90 @@ def add_user():
                 )
                 db.session.add(user)
                 db.session.commit()
-        except KeyError:
-            return "Missing query parameter: email", 400
+        except (KeyError):
+            return "Incomplete request: missing fields", 400
+        except (IntegrityError):
+            return "Integrity error", 400
+        except (ValueError):
+            return "Notifications must be integer (1 = enabled; 0 = disabled)", 400
     else:
         pass
     return "Add user"
 
 # Edit user
-@app.route("/user/edit/")
+@app.route("/user/edit/", methods=["GET", "POST"]) 
 def edit_user():
     if request.method == "POST":
         try:
-            user_id = request_form["user"]
+            user_id = int(request.form["user"])
             user = User.query.filter_by(id=user_id).first()
             if user:
-                name = request.form["name"]
-                email = request.form["email"]
-                # password = request.form["password"]
-                # the user has to update the password each time they update their information
-                # it should not behave like this but maybe we can overlook it for now
-                # pwdhash = hash_password(password)
-                location = request.form["location"]
-                notifications = request.form["notifications"]
-                user = User(
-                    name=name,
-                    email=email,
-                    #pwdhash=pwdhash,
-                    location=location,
-                    notifications=notifications
-                )
-                db.session.add(user)
+                if request.form["name"]:
+                    user.name = request.form["name"]
+                else:
+                    pass
+                if request.form["email"]:
+                    user.email = request.form["email"]
+                else:
+                    pass
+                if request.form["password"]:
+                    user.pwdhash = hash_password(request.form["password"])
+                else:
+                    pass
+                if request.form["location"]:
+                    user.location = request.form["location"]
+                else:
+                    pass
+                if request.form["notifications"]:
+                    user.notifications = int(request.form["notifications"])
+                else:
+                    pass # the last else must be there if you don't want an intendation error
                 db.session.commit()
             else:
-                abort(404)
-        except (KeyError, ValueError, IntegrityError):
-            abort(400)
+                return "User not found", 404
+        except (KeyError):
+            return "Incomplete request: missing fields", 400
+        except (IntegrityError):
+            return "Integrity error", 400
+        except (ValueError):
+            return "User ID and notifications (1 = enabled; 0 = disabled) must be integers", 400
     else:
         pass
     return "Edit user"
     
 # Delete user
-@app.route("/user/delete/")
+@app.route("/user/delete/", methods=["GET", "POST"]) 
 def delete_user():
     if request.method == "POST":
         try:
-            user_id = request_form["user"]
+            user_id = int(request.form["user"])
             user = User.query.filter_by(id=user_id).first()
             if user:
                 db.session.delete(user)
                 db.session.commit()
             else:
-                abort(404)  
-        except (KeyError, ValueError, IntegrityError):
-            abort(400)
+                return "User not found", 404
+        except (ValueError):
+            return "User ID must be integer", 400
+        except (KeyError):
+            return "User ID missing", 400
     return "Delete user"
 
 # Add event
-@app.route("/event/add/")
+@app.route("/event/add/", methods=["GET", "POST"]) 
 def add_event():
     if request.method == "POST":
         # submit the form
-        name = request.form["name"]
-        time = request.form["time"]
-        description = request.form["description"]
-        location = request.form["location"]
-        organization = request.form["organization"]
-        event = Event(
-            name=name,
-            time=time,
-            description=description,
-            location=location,
-            organization=organization
-        )
-        db.session.add(event)
-        db.session.commit()
-    else:
-        pass
-    return "Add event"
-
-# Edit event
-@app.route("/event/edit/")
-def edit_event():
-    if request.method == "POST":
         try:
-            event_id = request_form["event"]
-            event = Event.query.filter_by(id=event_id).first()
-            if event:
-                name = request.form["name"]
-                time = request.form["time"]
-                description = request.form["description"]
-                location = request.form["location"]
-                organization = request.form["organization"]
+            name = request.form["name"]
+            time = request.form["time"]
+            description = request.form["description"]
+            location = request.form["location"]
+            organization = int(request.form["organization"])
+        except (ValueError):
+            return "Organization ID must be integer", 400
+        else:
+            try:
                 event = Event(
                     name=name,
                     time=time,
@@ -138,79 +133,119 @@ def edit_event():
                     location=location,
                     organization=organization
                 )
+            except (ValueError):
+                return "Incomplete request: missing fields", 400
+            else:
                 db.session.add(event)
                 db.session.commit()
+    else:
+        pass
+    return "Add event"
+
+# Edit event
+@app.route("/event/edit/", methods=["GET", "POST"]) 
+def edit_event():
+    if request.method == "POST":
+        try:
+            event_id = request.form["event"]
+            event = Event.query.filter_by(id=event_id).first()
+            if event:
+                try:
+                    if request.form["name"]:
+                        event.name = request.form["name"]
+                    if request.form["time"]:
+                        event.time = request.form["time"]
+                    if request.form["description"]:
+                        event.description = request.form["description"]
+                    if request.form["location"]:
+                        event.location = request.form["location"]
+                    if request.form["organization"]:
+                        event.organization = int(request.form["organization"])
+                except (ValueError):
+                    return "Organization ID must be integer", 400
+                else:
+                    db.session.commit()
             else:
-                abort(404)
-        except (KeyError, ValueError, IntegrityError):
-            abort(400)
+                return "Event not found", 404
+        except (KeyError):
+            return "Incomplete request: missing fields", 400
+        except (ValueError):
+            return "Inappropriate value", 400
     else:
         pass
     return "Edit event"
     
 # Delete event
-@app.route("/event/delete/")
+@app.route("/event/delete/", methods=["GET", "POST"]) 
 def delete_event():
     if request.method == "POST":
         try:
-            event_id = request_form["event"]
+            event_id = int(request.form["event"])
             event = Event.query.filter_by(id=event_id).first()
             if event:
                 db.session.delete(event)
                 db.session.commit()
             else:
-                abort(404)  
-        except (KeyError, ValueError, IntegrityError):
-            abort(400)
+                return "Event not found", 404
+        except (ValueError):
+            return "Event ID must be integer", 400
+        except (KeyError):
+            return "Imcomplete request: missing fields", 400
     return "Delete event"
 
 # Add org
-@app.route("/org/add/")
+@app.route("/org/add/", methods=["GET", "POST"]) 
 def add_org():
     if request.method == "POST":
-        # submit the form
-        org_name = request.form["organization"]
-        org = Organization(
-            name=org_name
-        )
-        db.session.add(org)
-        db.session.commit()
+        try:
+            # submit the form
+            name = request.form["name"]
+            org = Organization(
+                name=name
+            )
+        except (KeyError):
+            return "Incomplete request: missing fields", 400
+        else:
+            db.session.add(org)
+            db.session.commit()
     return "Add organization"
 
 # Edit org
-@app.route("/org/edit/")
+@app.route("/org/edit/", methods=["GET", "POST"]) 
 def edit_org():
     if request.method == "POST":
         try:
-            org_id = request_form["org"]
+            org_id = int(request.form["org"])
             organization = Organization.query.filter_by(id=org_id).first()
             if organization:
-                org_name = request.form["organization"]
-                org = Organization(
-                    name=org_name
-                )
-                db.session.add(org)
-                db.session.commit()
+                if request.form["name"]:
+                    organization.name = request.form["name"]
             else:
-                abort(404)  
-        except (KeyError, ValueError, IntegrityError):
-            abort(400)
+                return "Organization not found", 404
+        except (KeyError):
+            return "Incomplete request: missing fields", 400
+        except (ValueError):
+            return "Organization ID must be integer", 400
+        else:
+            db.session.commit()
     return "Edit organization"
     
 # Delete org
-@app.route("/org/delete/")
+@app.route("/org/delete/", methods=["GET", "POST"]) 
 def delete_org():
     if request.method == "POST":
         try:
-            org_id = request_form["org"]
+            org_id = int(request.form["org"])
             organization = Organization.query.filter_by(id=org_id).first()
             if organization:
                 db.session.delete(organization)
                 db.session.commit()
             else:
-                abort(404)
-        except (KeyError, ValueError, IntegrityError):
-            abort(400)
+                return "Organization not found", 404
+        except (ValueError):
+            return "Organization ID must be integer", 400
+        except (KeyError):
+            return "Incomplete request: missing fields", 400
     return "Delete organization"
 
 # User model
