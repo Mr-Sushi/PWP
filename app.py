@@ -46,7 +46,7 @@ def add_user():
             return "Incomplete request: missing fields", 400
         except (IntegrityError):
             return "Integrity error", 400
-        except (ValueError):
+        except (ValueError, StatementError):
             return "Notifications must be integer (1 = enabled; 0 = disabled)", 400
     else:
         pass
@@ -118,13 +118,27 @@ def add_event():
         # submit the form
         try:
             name = request.form["name"]
-            time = request.form["time"]
+            # check date is in correct format
+            try:
+                time = datetime.strptime(request.form["time"], "%d.%m.%Y %H:%M")
+            except (ValueError):
+                return "Enter time in format dd.mm.yyyy hh:mm", 400
+            else:
+                pass
             description = request.form["description"]
             location = request.form["location"]
-            organization = int(request.form["organization"])
+            # check organization is integer
+            # if the date is incorrect, this is not shown (it should be)
+            try:
+                organization = int(request.form["organization"])
+            except (ValueError):
+                return "Organization ID must be integer", 400
+            else:
+                pass
         except (ValueError):
-            return "Organization ID must be integer", 400
+            return "Check the values are correct", 400
         else:
+            # check all fields are in the request
             try:
                 event = Event(
                     name=name,
@@ -154,15 +168,25 @@ def edit_event():
                     if request.form["name"]:
                         event.name = request.form["name"]
                     if request.form["time"]:
-                        event.time = request.form["time"]
+                        try:
+                            event.time = datetime.strptime(request.form["time"], "%d.%m.%Y %H:%M")
+                        except (ValueError):
+                            return "Enter time in format dd.mm.yyyy hh:mm", 400
+                        else:
+                            pass
                     if request.form["description"]:
                         event.description = request.form["description"]
                     if request.form["location"]:
                         event.location = request.form["location"]
                     if request.form["organization"]:
-                        event.organization = int(request.form["organization"])
+                        try:
+                            event.organization = int(request.form["organization"])
+                        except (ValueError):
+                            return "Organization ID must be integer", 400
+                        else:
+                            pass
                 except (ValueError):
-                    return "Organization ID must be integer", 400
+                    pass
                 else:
                     db.session.commit()
             else:
@@ -198,7 +222,6 @@ def delete_event():
 def add_org():
     if request.method == "POST":
         try:
-            # submit the form
             name = request.form["name"]
             org = Organization(
                 name=name
@@ -250,9 +273,9 @@ def delete_org():
 
 # User model
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(128), nullable=False)
+    email = db.Column(db.String(128), unique=True, nullable=False)
     pwdhash = db.Column(db.String(128), nullable=False)
     location = db.Column(db.String(128))
     notifications = db.Column(db.Integer, nullable=False)
@@ -261,7 +284,7 @@ class User(db.Model):
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
-    time = db.Column(db.String(128), nullable=False)
+    time = db.Column(db.DateTime(128), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(128))
     organization = db.Column(db.Integer, db.ForeignKey("organization.id"))

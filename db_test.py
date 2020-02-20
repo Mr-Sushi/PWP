@@ -48,20 +48,20 @@ def _get_org():
     )
     
 def _get_event():
+    time = datetime.strptime("20.02.2020 20:20", "%d.%m.%Y %H:%M")
     return Event(
         name="Test event",
-        time="Today",
-        description="hash",
+        time=time,
+        description="Something",
         location="Oulu",
         organization="1"
     )
     
 def test_create_instances(db_handle):
     """
-    Tests that we can create one instance of each model and save them to the
-    database using valid values for all columns. After creation, test that 
-    everything can be found from database, and that all relationships have been
-    saved correctly.
+    Create one instance of each model and save them to the database using valid
+    values. Everything is found from the database and the relationships have
+    been saved correclty.
     """
 
     # Create everything
@@ -77,29 +77,95 @@ def test_create_instances(db_handle):
     assert User.query.count() == 1
     assert Organization.query.count() == 1
     assert Event.query.count() == 1
-    db_user = User.query.first()
+    
+    # Check relationships
     db_organization = Organization.query.first()
     db_event = Event.query.first()
+    assert db_event.organization == db_organization.id
     
-    # Check all relationships (both sides)
-    assert db_event.organization == db_organization
-    assert db_organization in db_event.organization
+def test_user_unique_email(db_handle):
+    """
+    Another user can't be created with the same email.
+    """
+    
+    user_1 = _get_user()
+    user_2 = _get_user()
+    db_handle.session.add(user_1)
+    db_handle.session.add(user_2)
+    with pytest.raises(IntegrityError):
+        db_handle.session.commit()
         
-def test_something(db_handle):
-    # update an existing model instance (x 3)
+    db_handle.session.rollback()
+    
+def test_user_values(db_handle):
+    """
+    Notifications is integer.
+    """
+    
+    user = _get_user()
+    user.notifications = "something"
+    db_handle.session.add(user)
+    with pytest.raises(StatementError):
+        db_handle.session.commit()
+        # Doesn't raise StatementError?
+        
+    db_handle.session.rollback()
+    
+def test_event_values(db_handle):
+    """
+    Events must have correct date formatting and the organization is integer.
+    """
+    
+    event = _get_event()
+    event.time = "something"
+    event.organization = "something"
+    db_handle.session.add(event)
+    with pytest.raises(StatementError):
+        db_handle.session.commit()
+        
+    db_handle.session.rollback()
+    
+def test_edit_instances(db_handle):
+    """
+    Edit the instances.
+    """
+    
+    user = User.query.first()
+    organization = Organization.query.first()
+    event = Event.query.first()
+    user = _get_user()
+    organization = _get_org()
+    event = _get_event()
+    db_handle.session.commit()
+        
+def test_delete_instances(db_handle):
+    """
+    Delete the instances.
+    """
     
     user = _get_user()
     organization = _get_org()
     event = _get_event()
+    db_handle.session.add(user)
+    db_handle.session.add(organization)
+    db_handle.session.add(event)
+    db_handle.session.commit()
+    db_handle.session.delete(user)
+    db_handle.session.delete(organization)
+    db_handle.session.delete(event)
+    db_handle.session.commit()
     
-def test_something(db_handle):
-    # remove an existing model from the database (x 3)
+def test_measurement_ondelete_organization(db_handle):
+    """
+    When an organization is deleted, the event's foreign key is null.
+    """
     
-def test_something(db_handle):
-    # ValueError (x 3)
-    
-def test_something(db_handle):
-    # KeyError (x 3)
-    
-def test_something(db_handle):
-    # IntegrityError (x 3)
+    event = _get_event()
+    organization = _get_org()
+    event.organization = organization.id
+    db_handle.session.add(event)
+    db_handle.session.add(organization)
+    db_handle.session.commit()
+    db_handle.session.delete(organization)
+    db_handle.session.commit()
+    assert event.organization is None
