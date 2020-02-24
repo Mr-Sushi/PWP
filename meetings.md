@@ -19,14 +19,25 @@
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
 
 ## Meeting 2.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE:** 24.2.2020
+* **ASSISTANTS:** Ivan Sanchez Milara
 
 ### Minutes
 *Summary of what was discussed during the meeting*
+* Documentation review
+* DB limiations could be considered (e.g. notifications)
+* The code will change later and it can be used for DL4
 
 ### Action points
 *List here the actions points discussed with assistants*
+* The first table doesn't have a name in Wiki: add it
+* Add instructions how to run the tests
+* Who created the event should be in the database to allow editing it
+* Remove Oranigazations ID "unique requirement" (it's PK)
+* Look at limitations (e.g. notifications can be 0 or 1)
+* Check that the deleted element has been deleted
+* Associate users to organizations that don't exist (relations)
+* Follow events that don't exist (relations)
 
 
 ### Comments from staff
