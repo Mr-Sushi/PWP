@@ -49,20 +49,6 @@
 
 ### Minutes
 *Summary of what was discussed during the meeting*
-
-### Action points
-*List here the actions points discussed with assistants*
-
-
-### Comments from staff
-*ONLY USED BY COURSE STAFF: Additional comments from the course staff*
-
-## Meeting 4.
-* **DATE:**
-* **ASSISTANTS:**
-
-### Minutes
-*Summary of what was discussed during the meeting*
 * Add events the users are following to the table
 * Remove Following from the state diagram and connect to the User
 * We can use the Events resource with filtering, e.g. events=/api/events?user={user_id} and events_by_user=/api/users/{user_id}/events
@@ -85,6 +71,20 @@
 * Organizations should have get
 * All arrows in the state diagram should be implemented in Apiary
 * Edit should not return 201 but 204
+
+
+### Comments from staff
+*ONLY USED BY COURSE STAFF: Additional comments from the course staff*
+
+## Meeting 4.
+* **DATE:**
+* **ASSISTANTS:**
+
+### Minutes
+*Summary of what was discussed during the meeting*
+
+### Action points
+*List here the actions points discussed with assistants*
 
 ### Comments from staff
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
