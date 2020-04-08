@@ -1,6 +1,15 @@
 from flask import Flask, request, abort, Response, current_app
 from flask_restful import Api
 import json
+import binascii, hashlib, os
+
+# Generate password hash
+# https://www.vitoshacademy.com/hashing-passwords-in-python/
+def hash_password(password):
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt, 100000)
+    pwdhash = binascii.hexlify(pwdhash)
+    return (salt + pwdhash).decode('ascii')
 
 class MasonBuilder(dict):
     """
@@ -277,13 +286,11 @@ class InventoryBuilder(MasonBuilder):
             title="Add a new organization",
             schema=self.organization_schema()
         )
-"""
-Not necessary
+
     def add_control_all_orgs(self):
         self.add_control(
             "eventhub:users-all",
             "/api/users/",
             method="GET",
-            title="get all users"
+            title="get all organizations"
         )
-"""
