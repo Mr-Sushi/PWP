@@ -77,14 +77,27 @@
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
 
 ## Meeting 4.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE:** 8.4.2020
+* **ASSISTANTS:** Mika Oja
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+* "from ..utils" is sketchy
+* Returning only the status is enough
+* KeyError and ValueError should not happen as there are no parameters
+* Server-side errors will give 500 anyway
+* Don't generate the IDs as they are primary keys
+* If two clients connect at the same time, it can create a conflict when IDs are generated
+* Routing is missing, can't run the code
+* DB IDs are not showed for clients unless they need it for something
+* Change 401 error code to 403 in Apiary (no need to implement it)
 
 ### Action points
-*List here the actions points discussed with assistants*
+* Add the init file (package definition)
+* Don't generate IDs
+* Don't read IDs
+* Change 401 error codes to 403 in Apiary
+* Return just statuses
+* Run the API and do the API tests
 
 ### Comments from staff
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
