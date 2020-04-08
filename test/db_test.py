@@ -36,7 +36,7 @@ def db_handle():
 def _get_user():
     return User(
         name="Test User",
-        email="test.email@something.xyz",
+        email="db_test.email@something.xyz",
         pwdhash="hash",
         location="Oulu",
         notifications="1"
