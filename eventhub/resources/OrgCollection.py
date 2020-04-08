@@ -4,7 +4,7 @@ from flask_restful import Resource, Api
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
-from .orgitem import OrgItem
+from .OrgItem import OrgItem
 from ..models import Org
 from ..utils import InventoryBuilder, MasonBuilder, create_error_response
 import json
@@ -51,11 +51,13 @@ class OrganizationCollection(Resource):
         org.id = len(organizations)+1
 
         try:
+            organizations = Organization.query.all()
+            org.id = len(organizations)+1
             db.session.add(org)
             db.session.commit()
 
         except IntegrityError:
-            return create_event_error_response(409, "Already exists",
+            return create_error_response(409, "Already exists",
                                                "Organization with id '{}' already exists.".format(org.id)
                                                )
     
