@@ -104,7 +104,6 @@ def _get_org():
     }
 
 def _get_user(number=1):
-
     return {
         "username": "Test user".format(number),
         "name": "test user",
@@ -114,14 +113,11 @@ def _get_user(number=1):
 
 
 def _check_control_put_method(ctrl, client, obj, putType):
-
-
     ctrl_obj = obj["@controls"][ctrl]
     href = ctrl_obj["href"]
     method = ctrl_obj["method"].lower()
     schema = ctrl_obj["schema"]
     assert method == "put"
-
     if putType == "event":
         body = _get_event()
     elif putType == "user":
@@ -133,7 +129,6 @@ def _check_control_put_method(ctrl, client, obj, putType):
 
 
 def _check_control_post_method(ctrl, client, obj):
-
     ctrl_obj = obj["@controls"][ctrl]
     href = ctrl_obj["href"]
     method = ctrl_obj["method"].lower()
@@ -149,7 +144,6 @@ def _check_control_post_method(ctrl, client, obj):
 
 
 class TestEventCollection(object):
-
     RESOURCE_URL = "/api/events/"
 
     def test_get(self, client):
@@ -383,7 +377,6 @@ class TestRelation_User-Org(object):
             _check_control_put_method("edit", client, item, "org")
 
 class TestUserCollection(object):
-
     RESOURCE_URL = "/api/users/"
 
     def test_get(self, client):
