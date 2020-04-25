@@ -1,21 +1,22 @@
 from flask_restful import Resource, Api
-
+#import pdb; pdb.set_trace()
 
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
-from .eventitem import EventItem
-from ..models import Event, User
-from ..utils import InventoryBuilder, MasonBuilder, createerror_response
+
+from .EventItem import EventItem
+from eventhub.models import Event, User
+from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response
 import json
-from Eventhub import db
+from eventhub import db
 from jsonschema import validate, ValidationError
 
 LINK_RELATIONS_URL = "/eventhub/link-relations/"
 
 USER_PROFILE = "/profiles/user/"
 ORG_PROFILE = "/profiles/org/"
-EVENT_PROFILE = "/profiles/EVENT/"
+EVENT_PROFILE = "/profiles/event/"
 ERROR_PROFILE = "/profiles/error/"
 
 MASON = "application/vnd.mason+json"
@@ -46,7 +47,8 @@ class EventCollection(Resource):
             
             #add creator id
             for item in events:
-                if (item.creator_id != None)
+                """
+                if (item.creator_id != None):
                     #create a dictionary
                     creator = {}
                     creator["id"] = item.creator_id
@@ -54,17 +56,16 @@ class EventCollection(Resource):
                     creator_user = User.query.filter_by(id=item.creator_id).first
                     creator_name = creator_user.name
                     creator["name"] = creator_name
-
+                """
                 event = MasonBuilder(
-                        id=item.id, 
                         name=item.name, 
                         time = item.time,
                         description=item.description, 
                         location = item.location, 
                         organization = item.organization,
-                        creator = item.creator)
-                        
-                event.add_control("self", api.url_for(eventItem, id=item.id))
+                        #creator = item.creator
+                )
+                event.add_control("self", api.url_for(EventItem, id=item.id))
                 event.add_control("profile", "/profiles/event/")
                 body["event_list"].append(event)
 
@@ -101,7 +102,7 @@ class EventCollection(Resource):
         except ValidationError as e:
             return create_error_response(400, "Invalid JSON document", str(e))
         
-        user = User.query.filter_by(id=request.json["creator_id"]).first()
+        # user = User.query.filter_by(id=request.json["creator_id"]).first()
       
         event = Event(
             name = request.json["name"],
@@ -109,14 +110,10 @@ class EventCollection(Resource):
             description = request.json["description"],
             location = request.json["location"],
             organization = request.json["organization"],
-            creator_id = request.json["creator_id"]
+            #creator_id = request.json["creator_id"]
         )
 
         event.creator = user
-    
-        # another possible way to generate id for event
-        #events = Event.query.all()
-        #event.id = len(events) + 1
 
         try:
             db.session.add(event)
@@ -128,8 +125,8 @@ class EventCollection(Resource):
             event.id = len(events)
 
         except IntegrityError:
-            return create_event_error_response(409, "Already exists",
+            return create_error_response(409, "Already exists",
                                                "Event with id '{}' already exists.".format(event.id)
                                                )
     
-        return Response(status=201, headers={"URL": api.url_for(EventItem, id=event.id)})
+        return Response(status=201)

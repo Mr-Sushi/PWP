@@ -1,10 +1,7 @@
 from flask import Flask, request, abort, Response, current_app
 from flask_restful import Api
 import json
-import binascii, hashlib, os
 
-# Generate password hash
-# https://www.vitoshacademy.com/hashing-passwords-in-python/
 def hash_password(password):
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
     pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt, 100000)
@@ -82,16 +79,18 @@ class InventoryBuilder(MasonBuilder):
     
     @staticmethod
     def event_schema():
-        
-         {
+        schema = {
             "type": "object",
-            "required": ["name","time", "description"]
+            "required": ["name", "description"]
         }
-        props = schema["properties"] = {}
+        schema["properties"] = {}
+        props = schema["properties"]
+        """
         props["id"] = {
             "description": "index of the event",
             "type": "number"
         }
+        """
         props["name"] = {
             "description": "name of the event",
             "type": "string"
@@ -167,17 +166,17 @@ class InventoryBuilder(MasonBuilder):
 
     # controls for events
     def add_control_delete_event(self, id):
-        from .resources.eventitem import EventItem
+        from .resources.EventItem import EventItem
         api = Api(current_app)
         self.add_control(
             "eventhub:delete",
-            href=api.url_for(eventItem, id=id),
+            href=api.url_for(EventItem, id=id),
             method="DELETE",
             title="Delete this event"
         )
 
     def add_control_edit_event(self, id):
-        from .resources.eventitem import EventItem
+        from .resources.EventItem import EventItem
         api = Api(current_app)
         self.add_control(
             "eventhub: edit",
@@ -209,7 +208,7 @@ class InventoryBuilder(MasonBuilder):
     
     # controls for users
     def add_control_delete_user(self, id):
-        from .resources.useritem import UserItem
+        from .resources.UserItem import UserItem
         api = Api(current_app)
         self.add_control(
             "eventhub:delete",
@@ -219,7 +218,7 @@ class InventoryBuilder(MasonBuilder):
         )
 
     def add_control_edit_user(self, id):
-        from .resources.useritem import UserItem
+        from .resources.UserItem import UserItem
 
         api = Api(current_app)
 
@@ -253,7 +252,7 @@ class InventoryBuilder(MasonBuilder):
 
     # controls for organizations
     def add_control_delete_org(self, id):
-        from .resources.orgitem import OrgItem
+        from .resources.OrgItem import OrgItem
         api = Api(current_app)
         self.add_control(
             "eventhub:delete",
@@ -263,7 +262,7 @@ class InventoryBuilder(MasonBuilder):
         )
 
     def add_control_edit_org(self, id):
-        from .resources.org import OrgItem
+        from .resources.OrgItem import OrgItem
 
         api = Api(current_app)
 

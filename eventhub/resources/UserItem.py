@@ -4,9 +4,9 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
-from Eventhub import db
-from ..models import Event, User
-from ..utils import InventoryBuilder, MasonBuilder, create_error_response, hash_password
+from eventhub.models import Event, User
+from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response, hash_password
+from eventhub import db
 import json
 from jsonschema import validate, ValidationError
 
@@ -46,7 +46,6 @@ class UserItem(Resource):
                                          )
                                         
         body = InventoryBuilder(
-            id=user_db.id,
             name=user_db.name,
             email=user_db.email,
             location=user_db.location,
@@ -86,7 +85,7 @@ class UserItem(Resource):
         try:
             validate(request.json, InventoryBuilder.user_schema())
         except ValidationError as e:
-            return create_user_error_response(400, "Invalid JSON document", str(e))
+            return create_error_response(400, "Invalid JSON document", str(e))
 
         password = request.json["password"]
         user = User(
@@ -111,11 +110,9 @@ class UserItem(Resource):
         user_db.notifications = user.notifications
         db.session.commit()
 
-        return Response(status=204, headers={
-            "URL": api.url_for(UserItem, id=id)
-        })
+        return Response(status=204)
 
-    def delete(self, id)
+    def delete(self, id):
         """
         delete user's informtation
         Parameters:
@@ -139,7 +136,6 @@ class UserItem(Resource):
         db.session.delete(user)
         db.session.commit()
     
-        return Response(status=204, headers={
-            "URL": api.url_for(UserItem, id=id))
+        return Response(status=204)
 
 

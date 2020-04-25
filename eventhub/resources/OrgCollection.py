@@ -5,10 +5,10 @@ from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
 from .OrgItem import OrgItem
-from ..models import Org
-from ..utils import InventoryBuilder, MasonBuilder, create_error_response
+from eventhub.models import Organization
+from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response
 import json
-from Eventhub import db
+from eventhub import db
 from jsonschema import validate, ValidationError
 
 LINK_RELATIONS_URL = "/eventhub/link-relations/"
@@ -20,7 +20,7 @@ ERROR_PROFILE = "/profiles/error/"
 
 MASON = "application/vnd.mason+json"
 
-class OrganizationCollection(Resource):
+class OrgCollection(Resource):
     """
     Resource class for collection of organizations
     """
@@ -47,12 +47,9 @@ class OrganizationCollection(Resource):
         
       
         org = Organization(name = request.json["name"])
-        organizations = Organization.query.all()
-        org.id = len(organizations)+1
 
         try:
             organizations = Organization.query.all()
-            org.id = len(organizations)+1
             db.session.add(org)
             db.session.commit()
 
@@ -61,4 +58,4 @@ class OrganizationCollection(Resource):
                                                "Organization with id '{}' already exists.".format(org.id)
                                                )
     
-        return Response(status=201, headers={"URL": api.url_for(OrgItem, id=org.id)})
+        return Response(status=201)

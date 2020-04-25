@@ -4,11 +4,12 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
-from Eventhub import db
-from ..models import Event, User
-from ..utils import InventoryBuilder, MasonBuilder, create_error_response
+from eventhub import db
+from eventhub.models import Event, User
+from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response
 import json
 from jsonschema import validate, ValidationError
+from datetime import datetime
 
 
 LINK_RELATIONS_URL = "/eventhub/link-relations/"
@@ -16,7 +17,7 @@ LINK_RELATIONS_URL = "/eventhub/link-relations/"
 USER_PROFILE = "/profiles/user/"
 ERROR_PROFILE = "/profiles/error/"
 ORG_PROFILE = "/profiles/org/"
-EVENT_PROFILE = "/profiles/EVENT/"
+EVENT_PROFILE = "/profiles/event/"
 
 MASON = "application/vnd.mason+json"
 
@@ -41,15 +42,14 @@ class EventItem(Resource):
                                          "Event ID {} was not found".format(
                                              id)
                                          )
-        
+        """
         if event_db.creator is None:
             return create_error_response(404, "Event not found",
                                          "Event ID {} was not found".format(
                                              id)
                                          )
-
+        """
         body = InventoryBuilder(
-            id=event_db.id,
             name=event_db.name,
             time=event_db.time,
             description=event_db.description,
@@ -58,7 +58,7 @@ class EventItem(Resource):
         )
         
         body.add_namespace("eventhub", LINK_RELATIONS_URL)
-        body.add_control("self", api.url_for(eventItem, id=id))
+        body.add_control("self", api.url_for(EventItem, id=id))
         body.add_control("profile", EVENT_PROFILE)
         body.add_control_delete_event(id)
         body.add_control_edit_event(id)
@@ -117,9 +117,7 @@ class EventItem(Resource):
         event_db.organization = body.organization
         db.session.commit()
 
-        return Response(status=204, headers={
-            "URL": api.url_for(EventItem, id=id)
-        })
+        return Response(status=204)
     def delete(self,id):
         """
         delete information of an event
@@ -140,6 +138,4 @@ class EventItem(Resource):
         ## How to add response 401??
         Event.query.filter(Event.id==id).delete()
         db.session.commit()
-        return Response(status = 204,headers={
-            "URL": api.url_for(EventItem, id=id)
-        })
+        return Response(status = 204)

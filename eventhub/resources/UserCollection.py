@@ -5,11 +5,11 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
-from .useritem import UserItem
-from ..models import Event, User
-from ..utils import InventoryBuilder, MasonBuilder, create_error_response, hash_password
+from .UserItem import UserItem
+from eventhub.models import Event, User
+from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response, hash_password
 import json
-from Eventhub import db
+from eventhub import db
 from jsonschema import validate, ValidationError
 
 LINK_RELATIONS_URL = "/eventhub/link-relations/"
@@ -40,7 +40,6 @@ class UserCollection(Resource):
 
             for i in users:
                 item = MasonBuilder(
-                    id = i.id,
                     name = i.name,
                     email = i.email,
                     pwdhash = i.pwdhash,
@@ -48,7 +47,7 @@ class UserCollection(Resource):
                     notifications = i.notifications
                 )
                 item.add_control("self", api.url_for(
-                    UserItem, id=j.id))
+                    UserItem, id=i.id))
                 item.add_control("profile", "/profiles/user/")
                 body["items"].append(item)
                 
@@ -88,17 +87,13 @@ class UserCollection(Resource):
         password = request.json["password"]
         user = User(
             name=request.json['name'],
-            email=reques.json['email'],
+            email=request.json['email'],
             pwdhash=hash_password(password),
             location=request.json["location"],
             notifications=request.json["notifications"]
         )
 
-        try:
-            #generate user id
-            users = User.query.all()
-            user.id = len(users)+1
-                    
+        try:        
             db.session.add(user)
             db.session.commit()
 

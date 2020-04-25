@@ -3,10 +3,10 @@ from flask_restful import Resource, Api
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
-from ... import db
+from eventhub import db
 # mainly subfunctions
-from ..models import Organization
-from ..utils import InventoryBuilder, MasonBuilder, create_error_response
+from eventhub.models import Organization
+from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response
 import json
 from jsonschema import validate, ValidationError
 
@@ -41,7 +41,6 @@ class OrgItem(Resource):
                                          )
         
         body = InventoryBuilder(
-            id=org_db.id,
             name=org_db.name
         )
         #check after finishing utils.py
@@ -73,7 +72,6 @@ class OrgItem(Resource):
                                          )
 
         body = Organization(
-            id=id,
             name=request.json["name"]
         )
 
@@ -94,7 +92,7 @@ class OrgItem(Resource):
         org_db.name = body.name
         db.session.commit()
 
-        return Response(status=204, headers={"URL": api.url_for(OrgItem, id=org_db.id)})
+        return Response(status=204)
 
     def delete(self,id):
         """
@@ -115,4 +113,4 @@ class OrgItem(Resource):
         ## How to add response 401??--How to know if the client has sufficient permission?
         db.session.delete(org_db)
         db.session.commit()
-        return Response(status = 204})
+        return Response(status = 204)
