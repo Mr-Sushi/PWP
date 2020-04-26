@@ -109,16 +109,16 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form>
+      <form action="" method="post" name="postEventFrom">
         <div class="modal-body">
             <div class="form-group">
               <label for="eventTitle">Title</label>
-              <input type="email" class="form-control" id="eventTitle">
+              <input type="text" class="form-control" id="eventTitle" name="eventTitle" required>
             </div>
             <div class="form-group">
               <label for="eventTime">Time</label>
               <div class="input-group date" id="eventTime" data-target-input="nearest">
-                <input type="text" class="form-control datetimepicker-input" data-target="#eventTime"/>
+                <input type="text" class="form-control datetimepicker-input" data-target="#eventTime" name="eventTime" required>
                 <div class="input-group-append" data-target="#eventTime" data-toggle="datetimepicker">
                   <div class="input-group-text">
                     <svg class="bi bi-calendar" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -136,15 +136,15 @@
             </script>
             <div class="form-group">
               <label for="eventDesc">Description</label>
-              <textarea class="form-control" id="eventDesc" rows="3"></textarea>
+              <textarea class="form-control" id="eventDesc" rows="3" name="eventDesc" required></textarea>
             </div>
             <div class="form-group">
               <label for="eventLocation">Location</label>
-              <input type="text" class="form-control" id="eventLocation">
+              <input type="text" class="form-control" id="eventLocation" name="eventLocation" required>
             </div>
             <div class="form-group">
               <label for="eventOrganization">Organisation</label>
-              <select class="form-control" id="eventOrganization">
+              <select class="form-control" id="eventOrganization" name="eventOrg" required>
                 <option>OTiT</option>
                 <option>OYY</option>
               </select>
@@ -152,7 +152,7 @@
         </div>
         <div class="modal-footer border-top-0 pt-0">
           <button type="button" class="btn btn-light" data-dismiss="modal" style="width: 96px;">Close</button>
-          <button type="button" class="btn btn-primary" style="width: 96px;">Post</button>
+          <button type="submit" class="btn btn-primary" style="width: 96px;">Post</button>
         </div>
       </form>
     </div>
@@ -172,14 +172,14 @@
       <form>
         <div class="modal-body">
             <div class="form-group">
-              <label for="eventTitle">Title</label>
-              <input type="email" class="form-control" id="eventTitle">
+              <label for="updateEitle">Title</label>
+              <input type="email" class="form-control" id="updateEventTitle">
             </div>
             <div class="form-group">
-              <label for="eventTime">Time</label>
-              <div class="input-group date" id="eventTime" data-target-input="nearest">
-                <input type="text" class="form-control datetimepicker-input" data-target="#eventTime"/>
-                <div class="input-group-append" data-target="#eventTime" data-toggle="datetimepicker">
+              <label for="updateEventTime">Time</label>
+              <div class="input-group date" id="updateEventTime" data-target-input="nearest">
+                <input type="text" class="form-control datetimepicker-input" data-target="#updateEventTime"/>
+                <div class="input-group-append" data-target="#updateEventTime" data-toggle="datetimepicker">
                   <div class="input-group-text">
                     <svg class="bi bi-calendar" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" d="M14 0H2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z" clip-rule="evenodd"/>
@@ -191,20 +191,20 @@
             </div>
             <script type="text/javascript">
               $(function () {
-                $('#eventTime').datetimepicker();
+                $('#updateEventTime').datetimepicker();
               });
             </script>
             <div class="form-group">
-              <label for="eventDesc">Description</label>
-              <textarea class="form-control" id="eventDesc" rows="3"></textarea>
+              <label for="updateEventDesc">Description</label>
+              <textarea class="form-control" id="updateEventDesc" rows="3"></textarea>
             </div>
             <div class="form-group">
-              <label for="eventLocation">Location</label>
-              <input type="text" class="form-control" id="eventLocation">
+              <label for="updateEventLocation">Location</label>
+              <input type="text" class="form-control" id="updateEventLocation">
             </div>
             <div class="form-group">
-              <label for="eventOrganization">Organisation</label>
-              <select class="form-control" id="eventOrganization">
+              <label for="updateEventOrganization">Organisation</label>
+              <select class="form-control" id="updateEventOrganization">
                 <option>OTiT</option>
                 <option>OYY</option>
               </select>
