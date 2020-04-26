@@ -4,6 +4,11 @@ const DEBUG = true;
 const MASONJSON = "application/vnd.mason+json";
 const PLAINJSON = "application/json";
 
+function renderError(jqxhr) {
+    let msg = jqxhr.responseJSON["@error"]["@message"];
+    $("div.notification").html("<p class='error'>" + msg + "</p>");
+}
+
 function renderMsg(msg) {
     $("div.notification").html("<div class='alert alert-primary' role='alert'>" + msg + "</div>");
 }
@@ -16,6 +21,11 @@ function getResource(href, renderer) {
     });
 }
 
+function followLink(event, a, renderer) {
+    event.preventDefault();
+    getResource($(a).attr("href"), renderer);
+}
+
 function postEvent(event) {
     event.preventDefault();
     let data = {};
@@ -25,10 +35,10 @@ function postEvent(event) {
     data.description = $("input[name='eventDesc']").val();
     data.location = $("input[name='eventLocation']").val();
     data.organization = $("input[name='eventOrg']").val();
-    submitEvent(form.attr("action"), form.attr("method"), data, getSubmittedEvent);
+    submitEventData(form.attr("action"), form.attr("method"), data, getSubmittedEvent);
 }
 
-function submitEvent(href, method, item, postProcessor) {
+function submitEventData(href, method, item, postProcessor) {
     $.ajax({
         url: href,
         type: method,
