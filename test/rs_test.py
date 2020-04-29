@@ -1,12 +1,12 @@
 import json
-import ast
 import os
 import pytest
 import sys
 import tempfile
+from datetime import datetime
 from jsonschema import validate
-from Eventhub import app, db
-from Eventhub.models import Event, User, LoginUser
+from eventhub import app, db
+from eventhub.models import Event, User, Organization
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 from sqlalchemy.exc import IntegrityError, StatementError
@@ -41,26 +41,24 @@ def _populate_db():
     """
     event = Event(
         name="Test event",
-        time=time,
+        time=datetime.strptime("20.02.2020 20:20", "%d.%m.%Y %H:%M"),
         description="Something",
         location="Oulu",
         organization="1"
     )
     for i in range(1, 2):
         user = User(name='user-{}'.format(i))
-        login_user = LoginUser(username='user-{}'.format(i))
-        login_user.password_hash = login_user.generate_hash('password')
-        login_user.user = user
+        org = Organization(username='user-{}'.format(i))
+        org.user = user
         db.session.add(user)
-        db.session.add(login_user)
+        db.session.add(org)
         event.joined_users.append(user)
 
     user = User(name='user-{}'.format(3))
-    login_user = LoginUser(username='user-{}'.format(3))
-    login_user.password_hash = login_user.generate_hash('password')
-    login_user.user = user
+    org = Organization(username='user-{}'.format(3))
+    org.user = user
     db.session.add(user)
-    db.session.add(login_user)
+    db.session.add(org)
     event.creator = user
     event.joined_users.append(user)
 
@@ -197,6 +195,9 @@ class TestEventItem(object):
         body = json.loads(resp.data)
         assert body["name"] == "PWP Meeting"
         assert body["description"] == "Test event"
+        assert body["time"] == datetime.strptime("20.02.2020 20:20", "%d.%m.%Y %H:%M")
+        assert body["location"] == "Oulu"
+        assert body["organization"] =="OTiT"
         _check_namespace(client, body)
         _check_control_get_method("profile", client, body)
         _check_control_get_method("eventhub:events-all", client, body)
@@ -233,6 +234,45 @@ class TestEventItem(object):
 
 class TestOrgCollection():
     RESOURCE_URL = "/api/org/"
+    def test_get(self, client):
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+
+        assert len(body["items"]) == 1
+        for item in body["items"]:
+            # _check_control_get_method("self", client, item)
+            # _check_control_get_method("profile", client, item)
+            assert "name" in item
+
+            # _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+        _check_namespace(client, body)
+        for item in body["items"]:
+            assert item["name"] == "Something"
+            _check_namespace(client, item)
+            _check_control_get_method("profile", client, item)
+            _check_control_get_method("eventhub:events-all", client, item)
+            _check_control_put_method("edit", client, item, "org")
+
+    def test_put(self, client):
+        user = _get_user(5)
+        resp_post = client.post("/api/users/", json=user)
+        resp_put = client.put("/api/users/3/events/1/")
+
+        # test with valid
+        assert resp_put.status_code == 204
+
+        # test with another url
+        resp = client.put(self.INVALID_URL)
+        assert resp.status_code == 404
+
+        # test with another url
+        resp_conf = client.put(self.RESOURCE_URL)
+        assert resp_conf.status_code == 409
 
     def test_post(self, client):
         valid = _get_org()
@@ -260,26 +300,22 @@ class TestOrgItem(object):
         for item in body["items"]:
             # _check_control_get_method("self", client, item)
             # _check_control_get_method("profile", client, item)
-            assert "id" in item
             assert "name" in item
-            assert "description" in item
 
             # _check_namespace(client, body)
         _check_control_get_method("self", client, body)
         _check_control_get_method("profile", client, body)
-        _check_control_get_method("eventhub:users-all", client, body)
-        _check_control_delete_method("eventhub:delete", client, body)
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
 
         _check_namespace(client, body)
         for item in body["items"]:
             assert item["name"] == "Something"
-            assert item["description"] == "Test event"
+            assert item["description"] == "Test Org"
             _check_namespace(client, item)
             _check_control_get_method("profile", client, item)
             _check_control_get_method("eventhub:events-all", client, item)
-            _check_control_put_method("edit", client, item, "event")
+            _check_control_put_method("edit", client, item, "org")
 
     def test_put(self, client):
         user = _get_user(5)
@@ -306,7 +342,7 @@ class TestOrgItem(object):
         assert resp.status_code == 404
 
 
-class TestRelation-User-Event(object):
+class TestUserEvent(object):
     RESOURCE_URL = "/api/users/1/events/"
     INVALID_URL = "/api/users/-1/events/"
 
@@ -315,19 +351,20 @@ class TestRelation-User-Event(object):
         assert resp.status_code == 200
         body = json.loads(resp.data)
 
-        assert len(body["items"]) == 1
-        for item in body["items"]:
+        assert len(body["followed_events"]) == 1
+        for event in body["followed_events"]:
             # _check_control_get_method("self", client, item)
             # _check_control_get_method("profile", client, item)
-            assert "id" in item
-            assert "name" in item
-            assert "description" in item
+            assert "name" in event
+            assert "time" in event
+            assert "description" in event
+            assert "location" in event
+            assert "organization" in event
 
             # _check_namespace(client, body)
         _check_control_get_method("self", client, body)
         _check_control_get_method("profile", client, body)
         _check_control_get_method("eventhub:users-all", client, body)
-
         _check_control_delete_method("eventhub:delete", client, body)
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
@@ -342,7 +379,7 @@ class TestRelation-User-Event(object):
             _check_control_put_method("edit", client, item, "event")
 
 
-class TestRelation_User-Org(object):
+class TestUserItem(object):
     RESOURCE_URL = "/api/users/1/org/"
     INVALID_URL = "/api/users/-1/org/"
 
@@ -495,3 +532,34 @@ class TestUserItem(object):
         assert resp.status_code == 404
         resp = client.delete(self.INVALID_URL)
         assert resp.status_code == 404
+
+class TestUserOrg(object):
+    RESOURCE_URL = "/api/users/1/events/"
+    INVALID_URL = "/api/users/-1/events/"
+
+    def test_get(self, client):
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+
+        assert len(body["orgs"]) == 1
+        for org in body["orgs"]:
+            # _check_control_get_method("self", client, item)
+            # _check_control_get_method("profile", client, item)
+            assert "name" in org
+
+            # _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("profile", client, body)
+        _check_control_get_method("eventhub:users-all", client, body)
+        _check_control_delete_method("eventhub:delete", client, body)
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+        _check_namespace(client, body)
+        for item in body["items"]:
+            assert item["name"] == org.name
+            _check_namespace(client, item)
+            _check_control_get_method("profile", client, item)
+            _check_control_get_method("eventhub:events-all", client, item)
+            _check_control_put_method("edit", client, item, "org")
