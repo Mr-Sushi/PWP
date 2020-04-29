@@ -75,7 +75,7 @@ class OrgItem(Resource):
             name=request.json["name"]
         )
 
-        org_db = Event.query.filter_by(id=id).first()
+        org_db = Organization.query.filter_by(id=id).first()
         if org_db is None:
             return create_error_response(404, "Not found",
                                          "No organization was found with the id {}".format(
@@ -83,12 +83,11 @@ class OrgItem(Resource):
                                          )
 
         try:
-            validate(request.json, InventoryBuilder.orga_schema())
+            validate(request.json, InventoryBuilder.org_schema())
         except ValidationError as e:
             return create_error_response(400, "Invalid JSON document", str(e))
 
         
-        org_db.id = body.id
         org_db.name = body.name
         db.session.commit()
 
@@ -106,7 +105,7 @@ class OrgItem(Resource):
         """
         api = Api(current_app)
         org_db = Organization.query.filter_by(id=id).first()
-        if orgt_db is None:
+        if org_db is None:
                 return create_error_response(404, "Not found",
                                             "Organization not found"
                                             )
