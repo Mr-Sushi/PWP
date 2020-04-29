@@ -113,7 +113,7 @@ class EventCollection(Resource):
             #creator_id = request.json["creator_id"]
         )
 
-        # event.creator = user
+        #event.creator = user
 
         try:
             db.session.add(event)

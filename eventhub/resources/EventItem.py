@@ -88,7 +88,6 @@ class EventItem(Resource):
                                          )
 
         body = Event(
-            id=id,
             name=request.json["name"],
             time=request.json["time"],
             description=request.json["description"],
@@ -109,7 +108,6 @@ class EventItem(Resource):
             return create_error_response(400, "Invalid JSON document", str(e))
 
         
-        event_db.id = body.id
         event_db.name = body.name
         event_db.time = body.time
         event_db.location = body.location

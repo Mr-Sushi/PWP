@@ -45,11 +45,11 @@ class OrgCollection(Resource):
                 )
                 org.add_control("self", api.url_for(OrgItem, id=item.id))
                 org.add_control("profile", "/profiles/org/")
-                body["org_list"].append(org)
+                body["orgs"].append(org)
 
             body.add_namespace("eventhub", LINK_RELATIONS_URL)
             body.add_control_all_orgs()
-            body.add_control_add_orgs()
+            body.add_control_add_org()
 
             return Response(json.dumps(body), 200, mimetype=MASON)
         except (KeyError, ValueError):

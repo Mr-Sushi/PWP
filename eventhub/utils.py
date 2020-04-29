@@ -1,6 +1,10 @@
 from flask import Flask, request, abort, Response, current_app
 from flask_restful import Api
 import json
+import hashlib
+import os
+import binascii
+
 
 def hash_password(password):
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
@@ -122,13 +126,15 @@ class InventoryBuilder(MasonBuilder):
     def user_schema():
         schema = {
             "type": "object",
-            "required": ["name", "email","pwdhash","notifications"]
+            "required": ["name", "email","password","notifications"]
         }
         props = schema["properties"] = {}
+        """
         props["id"] = {
             "description": "id for user",
             "type": "number"
         }
+        """
         props["name"] = {
             "description": "name of the user",
             "type": "string"
@@ -137,15 +143,21 @@ class InventoryBuilder(MasonBuilder):
             "description": "email of the user",
             "type": "string"
         }
+        props["password"]= {
+            "description": "password of the user",
+            "type": "string"
+        }
         props["location"] = {
             "description": "locaiton of the user",
             "type": "string"
         }
         props["notifications"] = {
             "description": "whether or not the user receives notifications",
-            "type": "string"
+            "type": "number"
         }
         return schema
+
+    
 
     @staticmethod
     def org_schema():
@@ -153,11 +165,14 @@ class InventoryBuilder(MasonBuilder):
             "type": "object",
             "required": ["name"]
         }
+    
         props = schema["properties"] = {}
+        """
         props["id"] = {
             "description": "id for organization",
             "type": "number"
         }
+        """
         props["name"] = {
             "description": "name of the organization",
             "type": "string"

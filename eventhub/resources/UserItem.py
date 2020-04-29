@@ -105,7 +105,7 @@ class UserItem(Resource):
         #not necessary: user_db.id = id
         user_db.name = user.name
         user_db.email = user.email
-        user_db.pwdhash = user.pwphash
+        user_db.pwdhash = user.pwdhash
         user_db.location = user.location
         user_db.notifications = user.notifications
         db.session.commit()
@@ -133,7 +133,7 @@ class UserItem(Resource):
 
         #print(user)
 
-        db.session.delete(user)
+        db.session.delete(user_db)
         db.session.commit()
     
         return Response(status=204)

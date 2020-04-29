@@ -1,6 +1,5 @@
 import os
 from flask import Flask
-from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from sqlalchemy import event
@@ -8,6 +7,7 @@ from sqlalchemy.engine import Engine
 #from flask_cors import CORS
 #from flask_jwt_extended import JWTManager
 db = SQLAlchemy()
+
 
 #https://flask.palletsprojects.com/en/1.0.x/tutorial/factory/
 
@@ -18,7 +18,6 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        # SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(app.instance_path, "test.db"),
         DATABASE=os.path.join(app.instance_path, 'eventhub.sqlite'),
     )
 
@@ -39,17 +38,15 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # client
-    @app.route('/client/')
-    @cross_origin()
-    def client_site():
-        return app.send_static_file("html/client.html")
+    # a simple page that says hello
+    @app.route('/hello')
+    def hello():
+        return 'Hello, World!'
 
     return app
 
+
 app = create_app()
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
 #CORS(app)
 
 app.app_context().push()
