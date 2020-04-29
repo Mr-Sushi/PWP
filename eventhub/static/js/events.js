@@ -67,23 +67,38 @@ function submitEventData(href, method, item, postProcessor) {
     //console.log("data: " + item);
     console.log("JSON.stringify: " + JSON.stringify(item));
     renderMsg("Event Posted", "success"); // Show a message
+    $("#event-list").prepend(eventCard(item)); // Append posted event
+    $("form[name='postEventForm']").find("input[type=text], textarea, select").val(""); // Clear form
+    
 }
 
 function getSubmittedEvent(data, status, jqxhr) {
-    //console.log("Event posted");
-    //renderMsg("Event Posted", "primary");
+    console.log("getSubmittedEvent");
     let href = jqxhr.getResponseHeader("Location");
     if (href) {
-        getResource(href, appendEvent);
+        getResource(href, prependEvent);
     }
 }
 
-function appendEvent(body) {
+function prependEvent(body) {
     console.log("Append eventCard(body) to #event-list");
-    $("#event-list").append(eventCard(body));
+    $("#event-list").prepend(eventCard(body));
 }
 
 function eventCard(eventItem) {
+    let followEventBtn = "<a href='#' class='btn btn-secondary mr-3'>Follow</a>";
+    let unfollowEventBtn = "<a href='#' class='btn btn-success mr-3'><svg class='bi bi-check' width='1em' height='1em' viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'><path fill-rule='evenodd' d='M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z' clip-rule='evenodd'/></svg> Followed</a>";
+    let editEventBtn = "<a href='#' class='btn btn-light' data-toggle='modal' data-target='#editEventModal'>Edit</a>";
+    
+    let followers = 1;
+    let followersText = "follower";
+    
+    if (followers == 1) {
+        let followersText = "follower";
+    } else {
+        let followersText = "followers";
+    }
+    
     return "<div class='card mt-4'>"
               + "<div class='card-body'>"
                 + "<h5 class='card-title'>"+ eventItem.name +"</h5>"
@@ -100,38 +115,12 @@ function eventCard(eventItem) {
 }
 
 function listEvents(body) {
-    //console.log("listEvents");
-    //body.items.forEach(function (eventItem) {
-        //$("#event-list").append(eventCard(eventItem));
-    //});
-    //$("#event-list").append(eventCard(eventItem[0]));
-}
-
-function showEvent(eventItem) {
-    let followEventBtn = "<a href='#' class='btn btn-secondary mr-3'>Follow</a>";
-    let unfollowEventBtn = "<a href='#' class='btn btn-success mr-3'><svg class='bi bi-check' width='1em' height='1em' viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'><path fill-rule='evenodd' d='M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z' clip-rule='evenodd'/></svg> Followed</a>";
-    let editEventBtn = "<a href='#' class='btn btn-light' data-toggle='modal' data-target='#editEventModal'>Edit</a>";
-    
-    let followers = "1"; // placeholder
-    if (followers == 1) {
-        let followersText = "follower";
-    } else {
-        let followers = "followers";
-    }
-
-    return "<div class='card mt-4'>"
-              + "<div class='card-body'>"
-                + "<h5 class='card-title'>"+ eventItem.name +"</h5>"
-                + "<h6 class='card-subtitle mb-4 text-muted'>"+ eventItem.time +"</h6>"
-                + "<p class='card-text'>"+ eventItem.description +"</p>"
-                + "<p class='card-text'><span class='text-muted'>Location:</span> "+ eventItem.location +"</p>"
-                + "<p class='card-text mb-4 text-muted'>Organizer: <a href='#'>"+ eventItem.organization +"</a></p>"
-                + "<div class='row'>"
-                  + "<div class='col-sm'>" + followEventBtn + "" + followers + "" + followersText + "</div>"
-                  + "<div class='col-sm text-right'>" + editEventBtn + "</div>"
-                + "</div>"
-              + "</div>"
-            + "</div>";
+    console.log("listEvents");
+    console.log("body: " + body);
+    console.log("body.event_list: " + body.event_list);
+    body.event_list.forEach(function (eventItem) {
+        $("#event-list").prepend(eventCard(eventItem));
+    });
 }
 
 $(document).ready(function() {

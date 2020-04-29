@@ -1,1 +1,6 @@
 .DS_Store
+eventhub/bin
+__pycache__
+eventhub.egg-info
+app.py
+app copy.py
