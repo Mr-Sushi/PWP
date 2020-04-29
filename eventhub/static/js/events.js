@@ -5,21 +5,28 @@ const MASONJSON = "application/vnd.mason+json";
 const PLAINJSON = "application/json";
 
 function renderError(jqxhr) {
+    let closeAlert = "<button type='button' class='close' data-dismiss='alert' aria-label='Close' style='margin-top: -1px;'>"
+                    + "<span aria-hidden='true'>&times;</span>"
+                    + "</button>"
     let msg = jqxhr.responseJSON["@error"]["@message"];
-    $("div.notification").html("<p class='error'>" + msg + "</p>");
+    $("div.notification").html("<div class='alert alert-danger' role='alert'>" + msg + closeAlert +"</div>");
 }
 
-function renderMsg(msg) {
-    $("div.notification").html("<div class='alert alert-primary' role='alert'>" + msg + "</div>");
+function renderMsg(msg, type) {
+    let closeAlert = "<button type='button' class='close' data-dismiss='alert' aria-label='Close' style='margin-top: -1px;'>"
+                    + "<span aria-hidden='true'>&times;</span>"
+                    + "</button>"
+    $("div.notification").html("<div class='alert alert-" + type + "' role='alert'>" + msg + closeAlert +"</div>");
 }
 
 function getResource(href, renderer) {
-  console.log('getResource');
+    console.log('getResource ' + href);
     $.ajax({
         url: href,
         success: renderer,
         error: renderError
     });
+    console.log('renderer ' + renderer);
 }
 
 function followLink(event, a, renderer) {
@@ -35,15 +42,17 @@ $(document).ready(function() {
         let form = $("form[name='postEventForm']");
         data.name = $("input[name='eventName']").val();
         data.time = $("input[name='eventTime']").val();
-        data.description = $("input[name='eventDesc']").val();
+        data.description = $("textarea[name='eventDesc']").val();
         data.location = $("input[name='eventLocation']").val();
-        data.organization = $("input[name='eventOrg']").val();
-        // submitEventData(form.attr("action"), form.attr("method"), data, getSubmittedEvent);
-        renderMsg("Event Posted"); // Show a message
+        data.organization = parseInt($("select[name='eventOrg']").val());
+        console.log("Post event: " + data.name + " "+ data.time + " "+ data.description + " "+ data.location + " "+ data.organization);
+        submitEventData(form.attr("action"), form.attr("method"), data, getSubmittedEvent);
+        //renderMsg("Event Posted", "primary"); // Show a message
     });
 });
 
 function submitEventData(href, method, item, postProcessor) {
+    console.log("submitEventData")
     $.ajax({
         url: href,
         type: method,
@@ -53,20 +62,49 @@ function submitEventData(href, method, item, postProcessor) {
         success: postProcessor,
         error: renderError
     });
+    console.log("url: " + href);
+    console.log("type: " + method);
+    //console.log("data: " + item);
+    console.log("JSON.stringify: " + JSON.stringify(item));
+    renderMsg("Event Posted", "success"); // Show a message
 }
 
 function getSubmittedEvent(data, status, jqxhr) {
-    renderMsg("Event Posted");
+    //console.log("Event posted");
+    //renderMsg("Event Posted", "primary");
     let href = jqxhr.getResponseHeader("Location");
     if (href) {
-        //getResource(href, appendSensorRow);
+        getResource(href, appendEvent);
     }
 }
 
+function appendEvent(body) {
+    console.log("Append eventCard(body) to #event-list");
+    $("#event-list").append(eventCard(body));
+}
+
+function eventCard(eventItem) {
+    return "<div class='card mt-4'>"
+              + "<div class='card-body'>"
+                + "<h5 class='card-title'>"+ eventItem.name +"</h5>"
+                + "<h6 class='card-subtitle mb-4 text-muted'>"+ eventItem.time +"</h6>"
+                + "<p class='card-text'>"+ eventItem.description +"</p>"
+                + "<p class='card-text'><span class='text-muted'>Location:</span> "+ eventItem.location +"</p>"
+                + "<p class='card-text mb-4 text-muted'>Organizer: <a href='#'>"+ eventItem.organization +"</a></p>"
+                + "<div class='row'>"
+                  + "<div class='col-sm'>" + followEventBtn + "" + followers + "" + followersText + "</div>"
+                  + "<div class='col-sm text-right'>" + editEventBtn + "</div>"
+                + "</div>"
+              + "</div>"
+            + "</div>";
+}
+
 function listEvents(body) {
-    body.items.forEach(function (eventItem) {
-        $("#event-list").append(showEvent(eventItem));
-    });
+    //console.log("listEvents");
+    //body.items.forEach(function (eventItem) {
+        //$("#event-list").append(eventCard(eventItem));
+    //});
+    //$("#event-list").append(eventCard(eventItem[0]));
 }
 
 function showEvent(eventItem) {

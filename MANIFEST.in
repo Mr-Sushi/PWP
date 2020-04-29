@@ -1,0 +1,2 @@
+graft eventhub/static
+global-exclude *.pyc

@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from sqlalchemy import event
@@ -7,7 +8,6 @@ from sqlalchemy.engine import Engine
 #from flask_cors import CORS
 #from flask_jwt_extended import JWTManager
 db = SQLAlchemy()
-
 
 #https://flask.palletsprojects.com/en/1.0.x/tutorial/factory/
 
@@ -39,15 +39,17 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # a simple page that says hello
+    # client
     @app.route('/client/')
+    @cross_origin()
     def client_site():
         return app.send_static_file("html/client.html")
 
     return app
 
-
 app = create_app()
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 #CORS(app)
 
 app.app_context().push()

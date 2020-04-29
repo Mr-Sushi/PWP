@@ -12,6 +12,7 @@
 <script type="text/javascript" src="http://localhost:5000/static/js/moment.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/js/tempusdominus-bootstrap-4.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
+<link rel="stylesheet" href="http://localhost:5000/static/css/events.css" />
 <script src="https://kit.fontawesome.com/81f9f432b9.js" crossorigin="anonymous"></script>
 </head>
 
@@ -134,11 +135,11 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form action="" method="post" name="postEventForm">
+      <form action="http://localhost:5000/api/events/" method="post" name="postEventForm">
         <div class="modal-body">
             <div class="form-group">
-              <label for="eventTitle">Title</label>
-              <input type="text" class="form-control" id="eventTitle" name="eventTitle" value="Test" required>
+              <label for="eventName">Title</label>
+              <input type="text" class="form-control" id="eventName" name="eventName" value="Test" required>
             </div>
             <div class="form-group">
               <label for="eventTime">Time</label>
@@ -170,8 +171,8 @@
             <div class="form-group">
               <label for="eventOrganization">Organisation</label>
               <select class="form-control" id="eventOrganization" name="eventOrg" value="Test" required>
-                <option>OTiT</option>
-                <option>OYY</option>
+                <option value="1">OTiT</option>
+                <option value="2">OYY</option>
               </select>
             </div>
         </div>
