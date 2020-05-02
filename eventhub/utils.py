@@ -298,7 +298,7 @@ class InventoryBuilder(MasonBuilder):
             method="POST",
             encoding="json",
             title="Add a new organization",
-            schema=self.organization_schema()
+            schema=self.org_schema()
         )
 
     def add_control_all_orgs(self):

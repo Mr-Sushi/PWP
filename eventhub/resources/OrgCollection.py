@@ -41,11 +41,11 @@ class OrgCollection(Resource):
             
             for item in orgs:
                 org = MasonBuilder(
-                        name=item.name
+                      name=item.name,
                 )
                 org.add_control("self", api.url_for(OrgItem, id=item.id))
                 org.add_control("profile", "/profiles/org/")
-                body["orgs"].append(org)
+                body["orgs_list"].append(org)
 
             body.add_namespace("eventhub", LINK_RELATIONS_URL)
             body.add_control_all_orgs()
