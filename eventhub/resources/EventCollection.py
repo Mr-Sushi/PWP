@@ -1,12 +1,11 @@
 from flask_restful import Resource, Api
-#import pdb; pdb.set_trace()
+
 
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
-
-from .EventItem import EventItem
-from eventhub.models import Event, User
+from .OrgItem import OrgItem
+from eventhub.models import Organization
 from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response
 import json
 from eventhub import db
@@ -21,112 +20,68 @@ ERROR_PROFILE = "/profiles/error/"
 
 MASON = "application/vnd.mason+json"
 
-class EventCollection(Resource):
+class OrgCollection(Resource):
     """
-    Resource class for events collection
+    Resource class for collection of organizations
     """
     def get(self):
         """
         get information as follows
         Information:
-            - id: Integer, id of event
-            - name: String, name of event
-            - time: DateTime, time of event
-            - description: String, description of event
-            - location: String, location of event
-            - organization: string, organization that the event belongs to
+            - name: name of the organization
         Response:
             - 400: KeyError, ValueError
-            - 200: Return information of all events (as a Mason document)
+            - 200: Return information of all organizations as a Mason document
         """
         api = Api(current_app)
         
         try:
-            events = Event.query.all()
-            body = InventoryBuilder(event_list=[])
+            orgs = Organization.query.all()
+            body = InventoryBuilder(orgs_list=[])
             
-            #add creator id
-            for item in events:
-                """
-                if (item.creator_id != None):
-                    #create a dictionary
-                    creator = {}
-                    creator["id"] = item.creator_id
-
-                    creator_user = User.query.filter_by(id=item.creator_id).first
-                    creator_name = creator_user.name
-                    creator["name"] = creator_name
-                """
-                event = MasonBuilder(
-                        name=item.name, 
-                        time = item.time,
-                        description=item.description, 
-                        location = item.location, 
-                        organization = item.organization,
-                        #creator = item.creator
+            for item in orgs:
+                org = MasonBuilder(
+                      name=item.name,
                 )
-                event.add_control("self", api.url_for(EventItem, id=item.id))
-                event.add_control("profile", "/profiles/event/")
-                body["event_list"].append(event)
+                org.add_control("self", api.url_for(OrgItem, id=item.id))
+                org.add_control("profile", "/profiles/org/")
+                body["orgs_list"].append(org)
 
             body.add_namespace("eventhub", LINK_RELATIONS_URL)
-            body.add_control_all_events()
-            body.add_control_add_event()
+            body.add_control_all_orgs()
+            body.add_control_add_org()
 
             return Response(json.dumps(body), 200, mimetype=MASON)
         except (KeyError, ValueError):
             abort(400)
-    
+
     def post(self):
         """
-        post information for new event 
+        post information for new organization
         Parameters:
-            - name: String, name of the event
-            - time: String, time of the event
-            - description: String, description of event
-            - location: String, location of the event
-            - organization: Integer, organization that the event belongs to
-            - creator_id: Integer, creator's id of the event
+            - name: String, name of the organization
         Response:
             - 415: create_error_response and alert "Unsupported media type. Requests must be JSON"
             - 400: create_error_response and alert "Invalid JSON document" 
             - 409: create_error_response and alert "Already exists. Event with id '{}' already exists."
-            - 201: success to post
+            - 201: succeed to post
         """
         api = Api(current_app)
         if not request.json:
             return create_error_response(415, "Unsupported media type","Requests must be JSON")
 
         try:
-            validate(request.json, InventoryBuilder.event_schema())
+            validate(request.json, InventoryBuilder.org_schema())
         except ValidationError as e:
             return create_error_response(400, "Invalid JSON document", str(e))
         
-        # user = User.query.filter_by(id=request.json["creator_id"]).first()
       
-        event = Event(
-            name = request.json["name"],
-            time = request.json["time"],
-            description = request.json["description"],
-            location = request.json["location"],
-            organization = request.json["organization"],
-            #creator_id = request.json["creator_id"]
-        )
+        org = Organization(name = request.json["name"])
 
-        #event.creator = user
+        
+        organizations = Organization.query.all()
+        db.session.add(org)
+        db.session.commit()
 
-        try:
-            db.session.add(event)
-            db.session.commit()
-            #print(api.url_for(EventItem, id=event.id))
-                
-            events = Event.query.all()
-            
-            event.id = len(events)
-
-        except IntegrityError:
-            return create_error_response(409, "Already exists",
-                                               "Event with id '{}' already exists.".format(event.id)
-                                               )
     
-        return Response(status=201)
+        return Response(status=201, headers={"URL": api.url_for(OrgItem, id=org.id)})

@@ -78,14 +78,10 @@ class OrgCollection(Resource):
       
         org = Organization(name = request.json["name"])
 
-        try:
-            organizations = Organization.query.all()
-            db.session.add(org)
-            db.session.commit()
+        
+        organizations = Organization.query.all()
+        db.session.add(org)
+        db.session.commit()
 
-        except IntegrityError:
-            return create_error_response(409, "Already exists",
-                                               "Organization with id '{}' already exists.".format(org.id)
-                                               )
     
-        return Response(status=201)
+        return Response(status=201, headers={"URL": api.url_for(OrgItem, id=org.id)})
