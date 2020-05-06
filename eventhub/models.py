@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 import binascii, hashlib, os
+from sqlalchemy import CheckConstraint
 
 from eventhub import db
 
@@ -27,6 +28,7 @@ class User(db.Model):
     pwdhash = db.Column(db.String(128), nullable=False)
     location = db.Column(db.String(128))
     notifications = db.Column(db.Integer, nullable=False)
+    CheckConstraint(notifications ==0 or notifications ==1, name='check1')
 
     followed_events = db.relationship('Event', secondary=following)#,back_populates='users1')
     """
@@ -63,3 +65,4 @@ class Organization(db.Model):
         #backref=db.backref('related_orgs', lazy=True))
     users2 = db.relationship('User',secondary=associations)#back_populates='related_orgs')
 
+db.create_all()
