@@ -27,8 +27,7 @@ class User(db.Model):
     email = db.Column(db.String(128), unique=True, nullable=False)
     pwdhash = db.Column(db.String(128), nullable=False)
     location = db.Column(db.String(128))
-    notifications = db.Column(db.Integer, nullable=False)
-    CheckConstraint(notifications ==0 or notifications ==1, name='check1')
+    notifications = db.Column(db.Integer,CheckConstraint('notifications IN (0, 1)'), nullable=False)
 
     followed_events = db.relationship('Event', secondary=following)#,back_populates='users1')
     """
