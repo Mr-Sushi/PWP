@@ -101,4 +101,4 @@ class UserCollection(Resource):
             return create_error_response(409, "Already exists",
                                                "The email address {} is already in use.".format(user.email))
     
-        return Response(status=201, headers={"URL": api.url_for(UserItem, id=user.id)})
+        return Response(status=201, headers={"Location": api.url_for(UserItem, id=user.id)})

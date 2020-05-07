@@ -79,6 +79,7 @@ class EventItem(Resource):
             - 415: create_error_response and alert "Unsupported media type Requests should be JSON"
             - 404: create_error_response and alert "Not found No event was found with the id {}"
             - 400: create_error_response and alert "Invalid JSON document"
+            - 409: create_error_response and alert "The event already exists"
             - 204: success to edit
         """
         api = Api(current_app)
@@ -107,12 +108,15 @@ class EventItem(Resource):
         except ValidationError as e:
             return create_error_response(400, "Invalid JSON document", str(e))
 
-        
-        event_db.name = body.name
-        event_db.time = body.time
-        event_db.location = body.location
-        event_db.description = body.description
-        event_db.organization = body.organization
+        try:
+            event_db.name = body.name
+            event_db.time = body.time
+            event_db.location = body.location
+            event_db.description = body.description
+            event_db.organization = body.organization
+        except IntegrityError:
+            return create_error_response(409, "Already exists",
+                                               "The event already exists")
         db.session.commit()
 
         return Response(status=204)
@@ -123,7 +127,6 @@ class EventItem(Resource):
             -id: Integer, id of the event
         Response:
             -404: create_error_response and alert "Event not found"
-            -401: create_error_response and alert "API key is missing or invalid"
             -204: success to delete
         """
         api = Api(current_app)
@@ -133,7 +136,6 @@ class EventItem(Resource):
                                          "Event ID {} was not found".format(
                                              id)
                                          )
-        ## How to add response 401??
         Event.query.filter(Event.id==id).delete()
         db.session.commit()
         return Response(status = 204)

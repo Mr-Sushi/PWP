@@ -1,6 +1,4 @@
 from flask_restful import Resource, Api
-
-
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
@@ -63,8 +61,9 @@ class OrgCollection(Resource):
         Response:
             - 415: create_error_response and alert "Unsupported media type. Requests must be JSON"
             - 400: create_error_response and alert "Invalid JSON document" 
-            - 409: create_error_response and alert "Already exists. Event with id '{}' already exists."
+            - 409: create_error_response and alert "The organization already exists" 
             - 201: succeed to post
+            
         """
         api = Api(current_app)
         if not request.json:
@@ -80,8 +79,12 @@ class OrgCollection(Resource):
 
         
         organizations = Organization.query.all()
-        db.session.add(org)
-        db.session.commit()
+        try:
+            db.session.add(org)
+            db.session.commit()
+        except IntegrityError:
+            return create_error_response(409, "Already exists",
+                                               "The organization already exists")
 
     
-        return Response(status=201, headers={"URL": api.url_for(OrgItem, id=org.id)})
+        return Response(status=201, headers={"Location": api.url_for(OrgItem, id=org.id)})

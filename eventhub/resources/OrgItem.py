@@ -63,6 +63,7 @@ class OrgItem(Resource):
             - 415: create_error_response and message "Unsupported media type Requests should be JSON"
             - 404: create_error_response and message "No organization was found with the id {}"
             - 400: create_error_response and message "Invalid JSON document"
+            - 409: create_error_response and alert "The organization already exists" 
             - 204: success to edit
         """
         api = Api(current_app)
@@ -87,9 +88,12 @@ class OrgItem(Resource):
         except ValidationError as e:
             return create_error_response(400, "Invalid JSON document", str(e))
 
-        
-        org_db.name = body.name
-        db.session.commit()
+        try:
+            org_db.name = body.name
+            db.session.commit()
+        except IntegrityError:
+            return create_error_response(409, "Already exists",
+                                               "The organization already exists")
 
         return Response(status=204)
 
@@ -100,7 +104,6 @@ class OrgItem(Resource):
         #     -id: Integer, id of the event
         # Response:
         #     -404: create_error_response and alert "Organization not found"
-        #     -401: create_error_response and alert "API key is missing or invalid"
         #     -204: success to delete
         """
         api = Api(current_app)
@@ -109,7 +112,6 @@ class OrgItem(Resource):
                 return create_error_response(404, "Not found",
                                             "Organization not found"
                                             )
-        ## How to add response 401??--How to know if the client has sufficient permission?
         db.session.delete(org_db)
         db.session.commit()
         return Response(status = 204)

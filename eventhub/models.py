@@ -39,7 +39,7 @@ class User(db.Model):
 # Event model
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(128), unique=True,nullable=False)
     time = db.Column(db.String(128), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(128))
@@ -56,7 +56,7 @@ class Event(db.Model):
 # Organization model
 class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(128), unique=True,nullable=False)
     
     event = db.relationship("Event", back_populates="org")
 
