@@ -78,7 +78,7 @@ And the database is up and running, as well as the API. You can easily add data 
 ## Testing the database
 The db_test.py in the "test" folder can be used for testing
 ```
-pytest db_test.py
+python db_test.py
 ```
 
 ### Sending requests
@@ -89,5 +89,5 @@ You can import the Insomnia.json file to [Insomnia](https://insomnia.rest) to se
 The test for the API is also in the test folder. 
 The command to test the API:
 ```
-pytest rs_test.py
+python rs_test.py
 ```
