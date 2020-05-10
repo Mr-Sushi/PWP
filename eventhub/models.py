@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 import binascii, hashlib, os
+from sqlalchemy import CheckConstraint
 
 from eventhub import db
 
@@ -26,7 +27,7 @@ class User(db.Model):
     email = db.Column(db.String(128), unique=True, nullable=False)
     pwdhash = db.Column(db.String(128), nullable=False)
     location = db.Column(db.String(128))
-    notifications = db.Column(db.Integer, nullable=False)
+    notifications = db.Column(db.Integer,CheckConstraint('notifications IN (0, 1)'), nullable=False)
 
     followed_events = db.relationship('Event', secondary=following)#,back_populates='users1')
     """
@@ -38,7 +39,7 @@ class User(db.Model):
 # Event model
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(128), unique=True,nullable=False)
     time = db.Column(db.String(128), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(128))
@@ -55,7 +56,7 @@ class Event(db.Model):
 # Organization model
 class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(128), unique=True,nullable=False)
     
     event = db.relationship("Event", back_populates="org")
 
@@ -63,3 +64,4 @@ class Organization(db.Model):
         #backref=db.backref('related_orgs', lazy=True))
     users2 = db.relationship('User',secondary=associations)#back_populates='related_orgs')
 
+db.create_all()

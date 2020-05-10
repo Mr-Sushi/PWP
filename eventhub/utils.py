@@ -85,7 +85,7 @@ class InventoryBuilder(MasonBuilder):
     def event_schema():
         schema = {
             "type": "object",
-            "required": ["name", "description"]
+            "required": ["name","time", "description","organization"]
         }
         schema["properties"] = {}
         props = schema["properties"]
@@ -184,7 +184,7 @@ class InventoryBuilder(MasonBuilder):
         from .resources.EventItem import EventItem
         api = Api(current_app)
         self.add_control(
-            "eventhub:delete",
+            "delete",
             href=api.url_for(EventItem, id=id),
             method="DELETE",
             title="Delete this event"
@@ -194,7 +194,7 @@ class InventoryBuilder(MasonBuilder):
         from .resources.EventItem import EventItem
         api = Api(current_app)
         self.add_control(
-            "eventhub: edit",
+            "edit",
             href=api.url_for(EventItem, id=id),
             method="Put",
             encoding="json",
@@ -205,17 +205,17 @@ class InventoryBuilder(MasonBuilder):
     def add_control_add_event(self):
 
         self.add_control(
-            "eventhub:add-event",
+            "create-event",
             "/api/events/",
             method="POST",
             encoding="json",
-            title="Add a new event",
+            title="Create event",
             schema=self.event_schema()
         )
 
     def add_control_all_events(self):
         self.add_control(
-            "eventhub:events-all",
+            "events-all",
             "/api/events/",
             method="GET",
             title="Get all events"
@@ -226,7 +226,7 @@ class InventoryBuilder(MasonBuilder):
         from .resources.UserItem import UserItem
         api = Api(current_app)
         self.add_control(
-            "eventhub:delete",
+            "delete",
             href=api.url_for(UserItem, id=id),
             method="DELETE",
             title="Delete this user"
@@ -249,7 +249,7 @@ class InventoryBuilder(MasonBuilder):
     def add_control_add_user(self):
 
         self.add_control(
-            "eventhub:add-user",
+            "create-user",
             "/api/users/",
             method="POST",
             encoding="json",
@@ -259,7 +259,7 @@ class InventoryBuilder(MasonBuilder):
 
     def add_control_all_users(self):
         self.add_control(
-            "eventhub:users-all",
+            "users-all",
             "/api/users/",
             method="GET",
             title="get all users"
@@ -270,7 +270,7 @@ class InventoryBuilder(MasonBuilder):
         from .resources.OrgItem import OrgItem
         api = Api(current_app)
         self.add_control(
-            "eventhub:delete",
+            "delete",
             href=api.url_for(OrgItem, id=id),
             method="DELETE",
             title="Delete this organization"
@@ -282,7 +282,7 @@ class InventoryBuilder(MasonBuilder):
         api = Api(current_app)
 
         self.add_control(
-            "eventhub:edit",
+            "edit",
             href=api.url_for(OrgItem, id=id),
             method="Put",
             encoding="json",
@@ -293,7 +293,7 @@ class InventoryBuilder(MasonBuilder):
     def add_control_add_org(self):
 
         self.add_control(
-            "eventhub:add-organization",
+            "create-organization",
             "/api/organizations/",
             method="POST",
             encoding="json",
@@ -303,8 +303,8 @@ class InventoryBuilder(MasonBuilder):
 
     def add_control_all_orgs(self):
         self.add_control(
-            "eventhub:users-all",
-            "/api/users/",
+            "orgs-all",
+            "/api/orgs/",
             method="GET",
             title="get all organizations"
         )

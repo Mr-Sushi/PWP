@@ -1,6 +1,4 @@
 from flask_restful import Resource, Api
-#import pdb; pdb.set_trace()
-
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
@@ -90,7 +88,7 @@ class EventCollection(Resource):
         Response:
             - 415: create_error_response and alert "Unsupported media type. Requests must be JSON"
             - 400: create_error_response and alert "Invalid JSON document" 
-            - 409: create_error_response and alert "Already exists. Event with id '{}' already exists."
+            - 409: create_error_response and alert "The event already exists" 
             - 201: success to post
         """
         api = Api(current_app)
@@ -114,19 +112,13 @@ class EventCollection(Resource):
         )
 
         #event.creator = user
-
         try:
             db.session.add(event)
             db.session.commit()
-            #print(api.url_for(EventItem, id=event.id))
-                
-            events = Event.query.all()
-            
-            event.id = len(events)
-
         except IntegrityError:
             return create_error_response(409, "Already exists",
-                                               "Event with id '{}' already exists.".format(event.id)
-                                               )
+                                               "The event already exists")
+        #print(api.url_for(EventItem, id=event.id))
+
     
-        return Response(status=201)
+        return Response(status=201, headers={"Location": api.url_for(EventItem, id=event.id)})

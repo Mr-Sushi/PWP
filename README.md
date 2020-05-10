@@ -65,15 +65,29 @@ Werkzeug==0.15.1
 zipp==3.0.0
 ```
 
-## Setting up the database
-
-Go to the application folder, import the db object and run the db.create_all() method in the Python shell:
-
+## Create the database and Running the API
+The app is created inside __init.py__ of the eventhub folder.
+For Windows, run this one level above the eventhub folder.
 ```
-from app import db
-db.create_all()
+set FLASK_APP=eventhub
+set FLASK_ENV=develpment
+flask run
+```
+And the database is up and running, as well as the API. You can easily add data e.g. using TablePlus.
+
+## Testing the database
+The db_test.py in the "test" folder can be used for testing
+```
+python db_test.py
 ```
 
 ### Sending requests
 
 You can import the Insomnia.json file to [Insomnia](https://insomnia.rest) to send requests.
+
+## Testing the API
+The test for the API is also in the test folder. 
+The command to test the API:
+```
+python rs_test.py
+```

@@ -74,12 +74,13 @@ class UserItem(Resource):
             - 415: create_user_error_response and message "Unsupported media type Requests must be JSON"
             - 400: create_user_error_response and message "Invalid JSON document"
             - 404: create_user_error_response and message "User not found" "User ID {} not found."
+            - 409: create_user_error_response and message "Already exists","The email address {} is already in use."
             - 204: success to edit
         """
         api = Api(current_app)
         #print(request.json)
         if not request.json:
-            return creat_error_response(415, "Unsupported media type",
+            return create_error_response(415, "Unsupported media type",
                                          "Requests must be JSON"
                                          )
         try:
@@ -102,13 +103,18 @@ class UserItem(Resource):
                                          "User ID {} was not found".format(id)
                                          )
 
-        #not necessary: user_db.id = id
-        user_db.name = user.name
-        user_db.email = user.email
-        user_db.pwdhash = user.pwdhash
-        user_db.location = user.location
-        user_db.notifications = user.notifications
-        db.session.commit()
+        try:        
+            user_db.name = user.name
+            user_db.email = user.email
+            user_db.pwdhash = user.pwdhash
+            user_db.location = user.location
+            user_db.notifications = user.notifications
+            db.session.commit()
+
+        except IntegrityError:
+            return create_error_response(409, "Already exists",
+                                               "The user already exists.")
+        
 
         return Response(status=204)
 

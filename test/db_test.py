@@ -7,8 +7,8 @@ from sqlalchemy.engine import Engine
 from sqlalchemy import event
 from sqlalchemy.exc import IntegrityError, StatementError
 
-import app
-from app import User, Event, Organization
+from eventhub import  db ,app
+from eventhub.models import Event, User, Organization
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -21,15 +21,17 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 @pytest.fixture
 def db_handle():
     db_fd, db_fname = tempfile.mkstemp()
-    app.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_fname
-    app.app.config["TESTING"] = True
+    # app.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_fname
+    # app.app.config["TESTING"] = True
+    app.config["TESTING"] = True
     
-    with app.app.app_context():
-        app.db.create_all()
+    # with app.app.app_context():
+    with app.app_context():
+        db.create_all()
         
-    yield app.db
+    yield db
     
-    app.db.session.remove()
+    db.session.remove()
     os.close(db_fd)
     os.unlink(db_fname)
     
@@ -48,13 +50,10 @@ def _get_org():
     )
     
 def _get_event():
-    time = datetime.strptime("20.02.2020 20:20", "%d.%m.%Y %H:%M")
     return Event(
         name="Test event",
-        time=time,
         description="Something",
         location="Oulu",
-        organization="1"
     )
     
 def test_create_instances(db_handle):
@@ -130,12 +129,13 @@ def test_edit_instances(db_handle):
     Edit the instances.
     """
     
-    user = User.query.first()
-    organization = Organization.query.first()
-    event = Event.query.first()
-    user = _get_user()
-    organization = _get_org()
-    event = _get_event()
+    user = User.query.first().update(_get_user())
+    organization = Organization.query.first().update(_get_org())
+    event = Event.query.first().update(_get_event())
+    # user = _get_user()
+    # organization = _get_org()
+    # event = _get_event()
+
     db_handle.session.commit()
         
 def test_delete_instances(db_handle):
