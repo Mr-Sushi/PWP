@@ -6,9 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
-#from flask_cors import CORS
-#from flask_jwt_extended import JWTManager
+from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response
 db = SQLAlchemy()
+import json
 
 
 
@@ -19,12 +19,13 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        # SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(app.instance_path, "test.db"),
+        SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(app.instance_path, "test.db"),
         DATABASE=os.path.join(app.instance_path, 'eventhub.sqlite'),
+        SQLALCHEMY_TRACK_MODIFICATIONS = False
     )
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+    
     db = SQLAlchemy(app)
 
     if test_config is None:
@@ -39,6 +40,35 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+
+    @app.route('/profiles/<resource>/')
+    def send_profile(resource):
+        return 'profiles'
+
+    @app.route("/eventhub/link-relations/")
+    def something():
+        return 'link-relations'
+
+    @app.route('/api/')
+    def EntryPoint():
+        body = {
+                "@controls": {
+                    "events-all": {
+                        "href": "/api/events/",
+                        "title": "All events"
+                    },
+                    "organizations-all": {
+                        "href": "/api/orgs/",
+                        "title": "All organizations"
+                    },
+                    "users-all": {
+                        "href": "/api/users/",
+                        "title": "All users"
+                    }
+                }
+            }
+        return json.dumps(body)
 
     # client
     @app.route('/client/')
@@ -84,31 +114,3 @@ api.add_resource(UsersByEvent, "/api/events/<event_id>/users/")
 api.add_resource(OrgsByUser, "/api/users/<user_id>/orgs/")
 api.add_resource(UsersOfOrg,"/api/orgs/<org_id>/users/")
 
-#jwt = JWTManager(app)
-"""
-
-
-
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
-
-
-
-@app.route("/profiles/<resource>/")
-def send_profile_html(resource):
-    return "Random string"
-    # return send_from_directory(app.static_folder, "{}.html".format(resource))
-
-
-@app.route("/eventhub/link-relations/")
-def send_link_relations_html():
-    return "some string"
-    # return send_from_directory(app.static_folder, "links-relations.html")
-
-
-
-
-"""

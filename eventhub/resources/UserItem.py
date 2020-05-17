@@ -34,7 +34,7 @@ class UserItem(Resource):
             - 200: Return the user's information (a Mason document).
         """
         
-        id = int(id)
+        #id = int(id)
         api = Api(current_app)
         #User.query.all()
         user_db = User.query.filter_by(id=id).first()

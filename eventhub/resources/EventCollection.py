@@ -34,46 +34,43 @@ class EventCollection(Resource):
             - location: String, location of event
             - organization: string, organization that the event belongs to
         Response:
-            - 400: KeyError, ValueError
             - 200: Return information of all events (as a Mason document)
         """
         api = Api(current_app)
         
-        try:
-            events = Event.query.all()
-            body = InventoryBuilder(event_list=[])
-            
-            #add creator id
-            for item in events:
-                """
-                if (item.creator_id != None):
-                    #create a dictionary
-                    creator = {}
-                    creator["id"] = item.creator_id
+        
+        events = Event.query.all()
+        body = InventoryBuilder(event_list=[])
+        
+        #add creator id
+        for item in events:
+            """
+            if (item.creator_id != None):
+                #create a dictionary
+                creator = {}
+                creator["id"] = item.creator_id
 
-                    creator_user = User.query.filter_by(id=item.creator_id).first
-                    creator_name = creator_user.name
-                    creator["name"] = creator_name
-                """
-                event = MasonBuilder(
-                        name=item.name, 
-                        time = item.time,
-                        description=item.description, 
-                        location = item.location, 
-                        organization = item.organization,
-                        #creator = item.creator
-                )
-                event.add_control("self", api.url_for(EventItem, id=item.id))
-                event.add_control("profile", "/profiles/event/")
-                body["event_list"].append(event)
+                creator_user = User.query.filter_by(id=item.creator_id).first
+                creator_name = creator_user.name
+                creator["name"] = creator_name
+            """
+            event = MasonBuilder(
+                    name=item.name, 
+                    time = item.time,
+                    description=item.description, 
+                    location = item.location, 
+                    organization = item.organization,
+                    #creator = item.creator
+            )
+            event.add_control("self", api.url_for(EventItem, id=item.id))
+            event.add_control("profile", "/profiles/event/")
+            body["event_list"].append(event)
 
-            body.add_namespace("eventhub", LINK_RELATIONS_URL)
-            body.add_control_all_events()
-            body.add_control_add_event()
+        body.add_namespace("eventhub", LINK_RELATIONS_URL)
+        body.add_control_all_events()
+        body.add_control_add_event()
 
-            return Response(json.dumps(body), 200, mimetype=MASON)
-        except (KeyError, ValueError):
-            abort(400)
+        return Response(json.dumps(body), 200, mimetype=MASON)
     
     def post(self):
         """
@@ -88,7 +85,6 @@ class EventCollection(Resource):
         Response:
             - 415: create_error_response and alert "Unsupported media type. Requests must be JSON"
             - 400: create_error_response and alert "Invalid JSON document" 
-            - 409: create_error_response and alert "The event already exists" 
             - 201: success to post
         """
         api = Api(current_app)
@@ -112,12 +108,10 @@ class EventCollection(Resource):
         )
 
         #event.creator = user
-        try:
-            db.session.add(event)
-            db.session.commit()
-        except IntegrityError:
-            return create_error_response(409, "Already exists",
-                                               "The event already exists")
+        
+        db.session.add(event)
+        db.session.commit()
+
         #print(api.url_for(EventItem, id=event.id))
 
     

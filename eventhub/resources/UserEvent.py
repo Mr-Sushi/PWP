@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, abort, Response, current_app
 from .UserItem import UserItem
 from eventhub import db
-from eventhub.models import Event, User, following
+from eventhub.models import Event, User, EventsAndUsers
 from eventhub.utils import InventoryBuilder, MasonBuilder, create_error_response
 import json
 
@@ -16,7 +16,7 @@ from .EventItem import EventItem
 LINK_RELATIONS_URL = "/eventhub/link-relations/"
 
 USER_PROFILE = "/profiles/user/"
-ORG_PROFILE = "/profile/org/"
+ORG_PROFILE = "/profiles/org/"
 EVENT_PROFILE = "/profiles/event/"
 ERROR_PROFILE = "/profiles/error/"
 
@@ -30,7 +30,6 @@ class EventsByUser(Resource):
             - id: Integer, user id
         Response:
             - 404: "User not found", "User ID {} was not found"
-            - 400: KeyError and ValueError (something else was found)
             - 200: Return the events information
         """
         api = Api(current_app)
@@ -47,40 +46,37 @@ class EventsByUser(Resource):
         body.add_control_delete_user(user_id)
         body.add_control_edit_user(user_id)
         body.add_control_all_users()
-        try:
-            # find all the events
-            followed_events = Event.query.filter(User.followed_events.any(id=user_id)).all()
-            # for each event, find specific information
-            for i in followed_events:
-                event = InventoryBuilder()
-                event["name"] = i.name
-                event["time"] = i.time
-                event["description"] = i.description
-                event["location"] = i.location
-                event["organization"] = i.organization
 
-                event.add_namespace("eventhub", LINK_RELATIONS_URL)
-                event.add_control("self", api.url_for(EventItem, id=i.id))
-                event.add_control("profile", EVENT_PROFILE)
-                event.add_control_delete_event(i.id)
-                event.add_control_edit_event(i.id)
-                event.add_control_all_events()
-                body["items"].append(event)  
+        # find all the events
+        followed_events = Event.query.filter(Event.users1.any(user_id=user_id)).all()
+        # for each event, find specific information
+        for i in followed_events:
+            event = InventoryBuilder()
+            event["name"] = i.name
+            event["time"] = i.time
+            event["description"] = i.description
+            event["location"] = i.location
+            event["organization"] = i.organization
 
-            return Response(json.dumps(body), 200, mimetype=MASON)
-        except (KeyError, ValueError):
-            abort(400)
+            event.add_namespace("eventhub", LINK_RELATIONS_URL)
+            event.add_control("self", api.url_for(EventItem, id=i.id))
+            event.add_control("profile", EVENT_PROFILE)
+            event.add_control_delete_event(i.id)
+            event.add_control_edit_event(i.id)
+            event.add_control_all_events()
+            body["items"].append(event)  
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
 
 class UsersByEvent(Resource):
     def get(self, event_id):
         """
-        Get all the users' email for a event
+        Get all the users' details for a event
         Parameters:
             - id: Integer, event id
         Response:
             - 404: "Event not found", "Event ID {} was not found"
-            - 400: KeyError and ValueError (something else was found)
             - 200: Return the users' email addresses
         """
         api = Api(current_app)
@@ -97,22 +93,24 @@ class UsersByEvent(Resource):
         body.add_control_delete_event(event_id)
         body.add_control_edit_event(event_id)
         body.add_control_all_events()
-        try:
-            # find all the users
-            followers = User.query.filter(Event.users1.any(id=event.id)).all()
-            # for each user, find the id and email
-            for i in followers:
-                user = InventoryBuilder()
-                user["email"] = i.email
+        
+        # find all the users
+        followers = User.query.filter(User.events.any(event_id=event.id)).all()
+        # for each user, find the id and email
+        for i in followers:
+            user = InventoryBuilder()
+            user["name"] = i.name
+            user["email"] = i.email
+            user["pwdhash"] = i.pwdhash
+            user["location"] = i.location
+            user["notifications"] = i.notifications
 
-                user.add_namespace("eventhub", LINK_RELATIONS_URL)
-                user.add_control("self", api.url_for(UserItem, id=i.id))
-                user.add_control("profile", USER_PROFILE)
-                user.add_control_delete_user(i.id)
-                user.add_control_edit_user(i.id)
-                user.add_control_all_users()
-                body["items"].append(user)  
+            user.add_namespace("eventhub", LINK_RELATIONS_URL)
+            user.add_control("self", api.url_for(UserItem, id=i.id))
+            user.add_control("profile", USER_PROFILE)
+            user.add_control_delete_user(i.id)
+            user.add_control_edit_user(i.id)
+            user.add_control_all_users()
+            body["items"].append(user)  
 
-            return Response(json.dumps(body), 200, mimetype=MASON)
-        except (KeyError, ValueError):
-            abort(400)
+        return Response(json.dumps(body), 200, mimetype=MASON)

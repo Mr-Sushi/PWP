@@ -14,7 +14,7 @@ from jsonschema import validate, ValidationError
 LINK_RELATIONS_URL = "/eventhub/link-relations/"
 
 USER_PROFILE = "/profiles/user/"
-ORG_PROFILE = "/profile/org/"
+ORG_PROFILE = "/profiles/org/"
 EVENT_PROFILE = "/profiles/event/"
 ERROR_PROFILE = "/profiles/error/"
 
@@ -43,7 +43,6 @@ class OrgItem(Resource):
         body = InventoryBuilder(
             name=org_db.name
         )
-        #check after finishing utils.py
         body.add_namespace("eventhub", LINK_RELATIONS_URL)
         body.add_control("self", api.url_for(OrgItem, id=id))
         body.add_control("profile", ORG_PROFILE)
@@ -71,8 +70,12 @@ class OrgItem(Resource):
             return create_error_response(415, "Unsupported media type",
                                          "Requests must be JSON"
                                          )
+        try:
+            validate(request.json, InventoryBuilder.org_schema())
+        except ValidationError as e:
+            return create_error_response(400, "Invalid JSON document", str(e))
 
-        body = Organization(
+        org = Organization(
             name=request.json["name"]
         )
 
@@ -83,13 +86,10 @@ class OrgItem(Resource):
                                              id)
                                          )
 
-        try:
-            validate(request.json, InventoryBuilder.org_schema())
-        except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document", str(e))
+        
 
         try:
-            org_db.name = body.name
+            org_db.name = org.name
             db.session.commit()
         except IntegrityError:
             return create_error_response(409, "Already exists",

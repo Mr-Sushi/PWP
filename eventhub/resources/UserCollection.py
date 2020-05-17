@@ -29,36 +29,33 @@ class UserCollection(Resource):
         Return information of all users (returns a Mason document) if found otherwise returns 404
         get all users information
         Response:
-            - 400: KeyError and ValueError (something else was found)
             - 200: Return information of all users (returns a Mason document)
         """
         api = Api(current_app)
 
-        try:
-            users = User.query.all()
-            body = InventoryBuilder(items=[])
+        
+        users = User.query.all()
+        body = InventoryBuilder(items=[])
 
-            for i in users:
-                item = MasonBuilder(
-                    name = i.name,
-                    email = i.email,
-                    pwdhash = i.pwdhash,
-                    location = i.location,
-                    notifications = i.notifications
-                )
-                item.add_control("self", api.url_for(
-                    UserItem, id=i.id))
-                item.add_control("profile", "/profiles/user/")
-                body["items"].append(item)
-                
-            body.add_namespace("eventhub", LINK_RELATIONS_URL)
-            body.add_control_all_users()
-            body.add_control_add_user()
+        for i in users:
+            item = MasonBuilder(
+                name = i.name,
+                email = i.email,
+                pwdhash = i.pwdhash,
+                location = i.location,
+                notifications = i.notifications
+            )
+            item.add_control("self", api.url_for(
+                UserItem, id=i.id))
+            item.add_control("profile", "/profiles/user/")
+            body["items"].append(item)
+            
+        body.add_namespace("eventhub", LINK_RELATIONS_URL)
+        body.add_control_all_users()
+        body.add_control_add_user()
             #print(body)
 
-            return Response(json.dumps(body), 200, mimetype=MASON)
-        except (KeyError, ValueError):
-            abort(400)
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     def post(self):
         """

@@ -28,31 +28,27 @@ class OrgCollection(Resource):
         Information:
             - name: name of the organization
         Response:
-            - 400: KeyError, ValueError
             - 200: Return information of all organizations as a Mason document
         """
         api = Api(current_app)
         
-        try:
-            orgs = Organization.query.all()
-            body = InventoryBuilder(orgs_list=[])
-            
-            for item in orgs:
-                org = MasonBuilder(
-                      name=item.name,
-                )
-                org.add_control("self", api.url_for(OrgItem, id=item.id))
-                org.add_control("profile", "/profiles/org/")
-                body["orgs_list"].append(org)
+        
+        orgs = Organization.query.all()
+        body = InventoryBuilder(orgs_list=[])
+        
+        for item in orgs:
+            org = MasonBuilder(
+                    name=item.name,
+            )
+            org.add_control("self", api.url_for(OrgItem, id=item.id))
+            org.add_control("profile", "/profiles/org/")
+            body["orgs_list"].append(org)
 
-            body.add_namespace("eventhub", LINK_RELATIONS_URL)
-            body.add_control_all_orgs()
-            body.add_control_add_org()
+        body.add_namespace("eventhub", LINK_RELATIONS_URL)
+        body.add_control_all_orgs()
+        body.add_control_add_org()
 
-            return Response(json.dumps(body), 200, mimetype=MASON)
-        except (KeyError, ValueError):
-            abort(400)
-
+        return Response(json.dumps(body), 200, mimetype=MASON)
     def post(self):
         """
         post information for new organization
