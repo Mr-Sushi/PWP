@@ -65,8 +65,8 @@ Werkzeug==0.15.1
 zipp==3.0.0
 ```
 
-## Create the database and Running the API
-The app is created inside __init.py__ of the eventhub folder.
+## Create and poplulate the database, and Running the API
+The app of databse and API is created inside __init.py__ of the eventhub folder.
 For Windows, run this one level above the eventhub folder.
 ```
 set FLASK_APP=eventhub
@@ -89,5 +89,5 @@ You can import the Insomnia.json file to [Insomnia](https://insomnia.rest) to se
 The test for the API is also in the test folder. 
 The command to test the API:
 ```
-pytest rs_test.py
+pytest resource_test.py
 ```
