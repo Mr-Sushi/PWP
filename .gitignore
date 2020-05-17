@@ -4,3 +4,4 @@ __pycache__
 eventhub.egg-info
 app.py
 app copy.py
+eventhub/resources/__pycache__
