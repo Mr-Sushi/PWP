@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <script type="text/javascript" src="http://localhost:5000/static/js/events.js"></script>
-<script type="text/javascript" src="http://localhost:5000/static/js/moment.js"></script>
+<script type="text/javascript" src="http://localhost:5000/static/js/moment.js"></script> <!-- moment.js for Date Picker -->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/js/tempusdominus-bootstrap-4.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
 <link rel="stylesheet" href="http://localhost:5000/static/css/events.css" />
@@ -74,7 +74,7 @@
             <a href="#" class="btn btn-success mr-3">
               <svg class="bi bi-check" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>
-              </svg> Followed</a> 3 people follow this event
+              </svg> Followed</a> 3 followers
           </div>
           <div class="col-sm text-right">
             <a href="#" class="btn btn-light" data-toggle="modal" data-target="#editEventModal">Edit</a>
@@ -96,7 +96,7 @@
           <a href="#" class="btn btn-success mr-3">
             <svg class="bi bi-check" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>
-            </svg> Followed</a> 3 people follow this event
+            </svg> Followed</a> 3 followers
         </div>
         <div class="col-sm text-right">
           <a href="#" class="btn btn-light" data-toggle="modal" data-target="#editEventModal">Edit</a>
@@ -190,21 +190,21 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content p-2">
       <div class="modal-header border-bottom-0">
-        <h5 class="modal-title" id="editEventModalLabel">Wappujokin</h5>
+        <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form>
+      <form action="" method="put" name="editEventForm">
         <div class="modal-body">
             <div class="form-group">
               <label for="updateEitle">Title</label>
-              <input type="email" class="form-control" id="updateEventTitle">
+              <input type="text" class="form-control" id="updateEventTitle" name="updateEventTitle">
             </div>
             <div class="form-group">
               <label for="updateEventTime">Time</label>
               <div class="input-group date" id="updateEventTime" data-target-input="nearest">
-                <input type="text" class="form-control datetimepicker-input" data-target="#updateEventTime"/>
+                <input type="text" id="updateEventTimeInput" name="updateEventTime" class="form-control datetimepicker-input" data-target="#updateEventTime"/>
                 <div class="input-group-append" data-target="#updateEventTime" data-toggle="datetimepicker">
                   <div class="input-group-text">
                     <svg class="bi bi-calendar" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -222,24 +222,24 @@
             </script>
             <div class="form-group">
               <label for="updateEventDesc">Description</label>
-              <textarea class="form-control" id="updateEventDesc" rows="3"></textarea>
+              <textarea class="form-control" id="updateEventDesc" name="updateEventDesc" rows="3"></textarea>
             </div>
             <div class="form-group">
               <label for="updateEventLocation">Location</label>
-              <input type="text" class="form-control" id="updateEventLocation">
+              <input type="text" class="form-control" id="updateEventLocation" name="updateEventLocation">
             </div>
             <div class="form-group">
               <label for="updateEventOrganization">Organisation</label>
-              <select class="form-control" id="updateEventOrganization">
-                <option>OTiT</option>
-                <option>OYY</option>
+              <select class="form-control" id="updateEventOrganization" name="updateEventOrg">
+                <option value="1">OTiT</option>
+                <option value="2">OYY</option>
               </select>
             </div>
         </div>
         <div class="modal-footer border-top-0 pt-0">
-          <button type="button" class="btn btn-light" data-dismiss="modal" style="width: 96px;">Close</button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" style="width: 96px;">Cancel</button>
-          <button type="button" class="btn btn-primary" style="width: 96px;">Save</button>
+          <button type="button" class="btn btn-light" data-dismiss="modal" style="width: 96px;">Cancel</button>
+          <button type="button" id="deleteEventBtn" class="btn btn-secondary" data-dismiss="modal" style="width: 96px;">Delete</button>
+          <button type="submit" class="btn btn-primary" style="width: 96px;">Save</button>
         </div>
       </form>
     </div>

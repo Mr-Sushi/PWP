@@ -71,7 +71,6 @@ function submitEventData(href, method, item, postProcessor) {
     renderMsg("Event Posted", "success"); // Show a message
     $("#event-list").prepend(eventCard(item)); // Append posted event
     $("form[name='postEventForm']").find("input[type=text], textarea, select").val(""); // Clear form
-    
 }
 
 function getSubmittedEvent(data, status, jqxhr) {
@@ -92,7 +91,7 @@ function eventCard(eventItem) {
     // Build event cards
     let followEventBtn = "<a href='#' class='btn btn-secondary mr-3'>Follow</a>";
     let unfollowEventBtn = "<a href='#' class='btn btn-success mr-3'><svg class='bi bi-check' width='1em' height='1em' viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'><path fill-rule='evenodd' d='M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z' clip-rule='evenodd'/></svg> Followed</a>";
-    let editEventBtn = "<a href='#' class='btn btn-light' data-toggle='modal' data-target='#editEventModal'>Edit</a>";
+    let editEventBtn = "<a onClick='editEvent()'>Edit!</a>";
     
     let followers = 1;
     let followersText = "follower";
@@ -116,6 +115,11 @@ function eventCard(eventItem) {
                 + "</div>"
               + "</div>"
             + "</div>";
+}
+
+function editEvent() {
+    $("#editEventModal").modal()
+    $('#updateEventTitle').val('Muutettu arvo');
 }
 
 function listEvents(body) {

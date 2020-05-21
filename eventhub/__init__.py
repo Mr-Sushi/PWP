@@ -71,7 +71,7 @@ def create_app(test_config=None):
         return json.dumps(body)
 
     # client
-    @app.route('/client/')
+    @app.route('/client/', methods=['GET', 'POST', 'PUT', 'DELETE'])
     @cross_origin()
     def client_site():
         return app.send_static_file("html/client.html")
@@ -79,7 +79,7 @@ def create_app(test_config=None):
     return app
 
 app = create_app()
-cors = CORS(app)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 #CORS(app)
 
@@ -113,4 +113,3 @@ api.add_resource(EventsByUser, "/api/users/<user_id>/events/")
 api.add_resource(UsersByEvent, "/api/events/<event_id>/users/")
 api.add_resource(OrgsByUser, "/api/users/<user_id>/orgs/")
 api.add_resource(UsersOfOrg,"/api/orgs/<org_id>/users/")
-
