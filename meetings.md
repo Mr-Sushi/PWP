@@ -117,14 +117,15 @@
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
 
 ## Final meeting
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE:** 18.5.2020
+* **ASSISTANTS:** Ivan Sanchez Milara
 
 ### Minutes
 *Summary of what was discussed during the meeting*
 
 ### Action points
 *List here the actions points discussed with assistants*
+* Edit an event and delete an event should be implemented
 
 
 ### Comments from staff
